@@ -1,0 +1,6 @@
+#ifndef TOBIIINTERACTIVE_H
+#define TOBIIINTERACTIVE_H
+
+#endif // TOBIIINTERACTIVE_H
+
+int testmain();
