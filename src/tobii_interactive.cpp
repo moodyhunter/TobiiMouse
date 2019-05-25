@@ -8,10 +8,11 @@ using namespace std;
 
 void gaze_point_callback( tobii_gaze_point_t const* gaze_point, void* user_data )
 {
+
     if( gaze_point->validity == TOBII_VALIDITY_VALID )
         printf( "Gaze point: %f, %f\n",
-                gaze_point->position_xy[ 0 ],
-                gaze_point->position_xy[ 1 ] );
+                static_cast<double>(gaze_point->position_xy[ 0 ]),
+                static_cast<double>(gaze_point->position_xy[ 1 ]));
 }
 
 void url_receiver( char const* url, void* user_data )
