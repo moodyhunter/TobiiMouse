@@ -10,17 +10,18 @@ void gaze_point_callback( tobii_gaze_point_t const* gaze_point, void* user_data 
 {
     if( gaze_point->validity == TOBII_VALIDITY_VALID )
         printf( "Gaze point: %f, %f\n",
-            gaze_point->position_xy[ 0 ],
-            gaze_point->position_xy[ 1 ] );
+                gaze_point->position_xy[ 0 ],
+                gaze_point->position_xy[ 1 ] );
 }
 
-static void url_receiver( char const* url, void* user_data )
+void url_receiver( char const* url, void* user_data )
 {
-    char* buffer = (char*)user_data;
+    char* buffer = reinterpret_cast<char*>(user_data);
+    //char* buffer = (char*)user_data;
     if( *buffer != '\0' ) return; // only keep first value
 
     if( strlen( url ) < 256 )
-        strcpy( buffer, url );
+        strcpy(buffer, url);
 }
 
 int testmain()
@@ -37,7 +38,7 @@ int testmain()
     error = tobii_device_create( api, url, &device );
     assert( error == TOBII_ERROR_NO_ERROR );
 
-    error = tobii_gaze_point_subscribe( device, gaze_point_callback, 0 );
+    error = tobii_gaze_point_subscribe( device, gaze_point_callback, nullptr );
     assert( error == TOBII_ERROR_NO_ERROR );
 
     int is_running = 100; // in this sample, exit after some iterations

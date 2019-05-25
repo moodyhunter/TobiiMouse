@@ -56,3 +56,13 @@ unix:!macx: LIBS += -L$$PWD/lib/x86/ -ltobii_stream_engine
 
 INCLUDEPATH += $$PWD/lib/x86
 DEPENDPATH += $$PWD/lib/x86
+
+LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine
+
+INCLUDEPATH += $$PWD/lib/x64
+DEPENDPATH += $$PWD/lib/x64
+
+LIBS += -L$$PWD/lib/x86/ -ltobii_stream_engine
+
+INCLUDEPATH += $$PWD/lib/x86
+DEPENDPATH += $$PWD/lib/x86

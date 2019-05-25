@@ -3,10 +3,12 @@
 #include "tobii_interactive.h"
 
 #include <QMessageBox>
+using namespace Devices;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    tobii(new Devices::TobiiInteractive)
 {
     ui->setupUi(this);
 }
@@ -18,6 +20,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_startButton_clicked()
 {
+    //tobii->testmain();
     QMessageBox *m = new QMessageBox();
     m->setText("Show text!!!!xxxxxxxxxxxxxxxxxxxxx");
     m->setWindowTitle("MyTitle");
