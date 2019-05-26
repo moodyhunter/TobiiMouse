@@ -1,9 +1,25 @@
 #ifndef TOBIIINTERACTIVE_H
 #define TOBIIINTERACTIVE_H
-namespace Devices {
-class TobiiInteractive{
+#include "tobii/tobii.h"
+#include <vector>
+#include <string>
+#include "tobii/tobii_streams.h"
+
+using namespace std;
+
+class TobiiInteractive {
 public:
-    static int testmain();
+    explicit TobiiInteractive() noexcept;
+    int testmain();
+
+    vector<string> devices;
+
+private:
+    static void gaze_point_callback(tobii_gaze_point_t const* gaze_point, void* user_data);
+    static void url_receiver( char const* url, void* user_data );
+    tobii_api_t *api;
+    vector<string> list_devices();
+    tobii_error_t lasterr;
 };
-};
+
 #endif // TOBIIINTERACTIVE_H

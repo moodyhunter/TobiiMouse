@@ -59,8 +59,7 @@ typedef enum tobii_error_t
     TOBII_ERROR_CONFLICTING_API_INSTANCES,
     TOBII_ERROR_CALIBRATION_BUSY,
     TOBII_ERROR_CALLBACK_IN_PROGRESS,
-    TOBII_ERROR_TOO_MANY_SUBSCRIBERS,
-    TOBII_ERROR_CONNECTION_FAILED_DRIVER,
+    TOBII_ERROR_TOO_MANY_SUBSCRIBERS
 } tobii_error_t;
 
 TOBII_API char const* TOBII_CALL tobii_error_message( tobii_error_t error );
@@ -114,7 +113,7 @@ TOBII_API tobii_error_t TOBII_CALL tobii_api_destroy( tobii_api_t* api );
 
 TOBII_API tobii_error_t TOBII_CALL tobii_system_clock( tobii_api_t* api, int64_t* timestamp_us );
 
-typedef void (*tobii_device_url_receiver_t)( char const* url, void* user_data );
+typedef void( *tobii_device_url_receiver_t )( char const* url, void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_local_device_urls( tobii_api_t* api,
     tobii_device_url_receiver_t receiver, void* user_data );
 
@@ -126,9 +125,12 @@ TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_local_device_urls_ex( tobii_a
     tobii_device_url_receiver_t receiver, void* user_data, uint32_t device_generations );
 
 
+typedef struct tobii_engine_t tobii_engine_t;
 typedef struct tobii_device_t tobii_device_t;
 
-TOBII_API tobii_error_t TOBII_CALL tobii_wait_for_callbacks( int device_count, tobii_device_t* const* devices );
+TOBII_API tobii_error_t TOBII_CALL tobii_wait_for_callbacks( tobii_engine_t* engine, int device_count, 
+    tobii_device_t* const* devices );
+
 
 TOBII_API tobii_error_t TOBII_CALL tobii_device_create( tobii_api_t* api, char const* url, tobii_device_t** device );
 
@@ -146,16 +148,10 @@ TOBII_API tobii_error_t TOBII_CALL tobii_update_timesync( tobii_device_t* device
 
 typedef struct tobii_device_info_t
 {
-    char serial_number[ 256 ];
-    char model[ 256 ];
-    char generation[ 256 ];
-    char firmware_version[ 256 ];
-    char integration_id[ 128 ];
-    char hw_calibration_version[ 128 ];
-    char hw_calibration_date[ 128 ];
-    char lot_id[ 128 ];
-    char integration_type[ 256 ];
-    char runtime_build_version[ 256 ];
+    char serial_number[ 128 ];
+    char model[ 64];
+    char generation[ 64 ];
+    char firmware_version[ 128];
 } tobii_device_info_t;
 
 TOBII_API tobii_error_t TOBII_CALL tobii_get_device_info( tobii_device_t* device,
@@ -219,18 +215,8 @@ typedef enum tobii_capability_t
     TOBII_CAPABILITY_CALIBRATION_3D,
     TOBII_CAPABILITY_PERSISTENT_STORAGE,
     TOBII_CAPABILITY_CALIBRATION_PER_EYE,
-    TOBII_CAPABILITY_COMPOUND_STREAM_WEARABLE_3D_GAZE_COMBINED,
+    TOBII_CAPABILITY_COMBINED_GAZE_VR,
     TOBII_CAPABILITY_FACE_TYPE,
-    TOBII_CAPABILITY_COMPOUND_STREAM_USER_POSITION_GUIDE_XY,
-    TOBII_CAPABILITY_COMPOUND_STREAM_USER_POSITION_GUIDE_Z,
-    TOBII_CAPABILITY_COMPOUND_STREAM_WEARABLE_LIMITED_IMAGE,
-    TOBII_CAPABILITY_COMPOUND_STREAM_WEARABLE_PUPIL_DIAMETER,
-    TOBII_CAPABILITY_COMPOUND_STREAM_WEARABLE_PUPIL_POSITION,
-    TOBII_CAPABILITY_COMPOUND_STREAM_WEARABLE_EYE_OPENNESS,
-    TOBII_CAPABILITY_COMPOUND_STREAM_WEARABLE_3D_GAZE_PER_EYE,
-    TOBII_CAPABILITY_COMPOUND_STREAM_WEARABLE_USER_POSITION_GUIDE_XY,
-    TOBII_CAPABILITY_COMPOUND_STREAM_WEARABLE_TRACKING_IMPROVEMENTS,
-    TOBII_CAPABILITY_COMPOUND_STREAM_WEARABLE_CONVERGENCE_DISTANCE,
 } tobii_capability_t;
 
 TOBII_API tobii_error_t TOBII_CALL tobii_capability_supported( tobii_device_t* device,
@@ -248,8 +234,6 @@ typedef enum tobii_stream_t
     TOBII_STREAM_GAZE_DATA,
     TOBII_STREAM_DIGITAL_SYNCPORT,
     TOBII_STREAM_DIAGNOSTICS_IMAGE,
-    TOBII_STREAM_USER_POSITION_GUIDE,
-    TOBII_STREAM_WEARABLE_FOVEATED_GAZE,
 } tobii_stream_t;
 
 TOBII_API tobii_error_t TOBII_CALL tobii_stream_supported( tobii_device_t* device, tobii_stream_t stream, 
@@ -280,16 +264,6 @@ typedef enum tobii_enabled_eye_t
     TOBII_ENABLED_EYE_RIGHT,
     TOBII_ENABLED_EYE_BOTH,
 } tobii_enabled_eye_t;
-
-
-typedef enum tobii_firmware_upgrade_state_t
-{
-    TOBII_FIRMWARE_UPGRADE_STATE_NOT_IN_PROGRESS,
-    TOBII_FIRMWARE_UPGRADE_STATE_IN_PROGRESS,
-} tobii_firmware_upgrade_state_t;
-
-TOBII_API tobii_error_t TOBII_CALL tobii_get_firmware_upgrade_state( tobii_device_t* device,
-    tobii_firmware_upgrade_state_t* firmware_upgrade_state );
 
 
 #ifdef __cplusplus
@@ -720,8 +694,6 @@ Retrieves the URLs for stream engine compatible devices currently connected to t
 A system might have multiple devices connected, which the stream engine is able to communicate with.
 tobii_enumerate_local_device_urls iterates over all such (excluding IS1 and IS2) devices found.
 It will only enumerate devices connected directly to the system, not devices connected on the network.
-Note that if both a tobii-ttp and a tobii-prp URL is available for the same tracker, only he tobii-prp 
-URL will be reported. For details, see tobii_enumerate_local_device_urls_ex().
 
 *api* must be a pointer to a valid tobii_api_t instance as created by calling tobii_api_create.
 
@@ -850,9 +822,6 @@ is created by bitwise OR-ing of the following constants:
 -   TOBII_DEVICE_GENERATION_G5
 -   TOBII_DEVICE_GENERATION_IS3
 -   TOBII_DEVICE_GENERATION_IS4
-
-Note that PRP generation devices are always enumerated, and only the tobii-prp URL will be reported for a tracker 
-for which there exists both a tobii-ttp and a tobii-prp URL.
 
 
 ### Return value
@@ -1098,7 +1067,7 @@ See tobii_device_create()
 
 
 /**
-@fn TOBII_API tobii_error_t TOBII_CALL tobii_wait_for_callbacks( int device_count, tobii_device_t* const* devices );
+@fn TOBII_API tobii_error_t TOBII_CALL tobii_wait_for_callbacks( tobii_engine_t* engine, int device_count, tobii_device_t* const* devices );
 @ingroup tobii
 
 tobii_wait_for_callbacks
@@ -1112,24 +1081,33 @@ Puts the calling thread to sleep until there are new callbacks available to proc
 ### Syntax
 
     #include <tobii/tobii.h>
-    tobii_error_t tobii_wait_for_callbacks( int device_count, tobii_device_t* const* devices )
+    tobii_error_t tobii_wait_for_callbacks( tobii_engine_t* engine, 
+        int device_count, tobii_device_t* const* devices )
 
 
 ### Remarks
 
 Stream engine does not use any threads to do processing or receive data. Instead, the functions
 tobii_device_process_callbacks() and tobii_device_process_callbacks() have to be called regularly, to receive data 
-from the device, and process it. 
+from the device and from Tobii Engine, and process it. 
 
-The typical use case is to implement your own thread to call tobii_device_process_callbacks from, and to avoid 
-busy-waiting for data to become available, tobii_wait_for_callbacks can be called before each call to 
-tobii_device_process_callbacks. It will sleep the calling thread until new data is available to process, after which 
-tobii_device_process_callbacks should be called to process it.
+The typical use case is to implement your own thread to call tobii_device_process_callbacks and 
+tobii_engine_process_callbacks from, and to avoid busy-waiting for data to become available, tobii_wait_for_callbacks 
+can be called before each call to tobii_device_process_callbacks and tobii_engine_process_callbacks. It will sleep the 
+calling thread until new data is available to process, after which tobii_device_process_callbacks and 
+tobii_engine_process_callbacks should be called to process it.
+
+In addition to waiting for data, tobii_wait_for_callbacks will also periodically call tobii_update_timesync() to ensure 
+synchronization of system and device timestamps. This means you will not have to call tobii_update_timesync() if you 
+regularly call tobii_wait_for_callbacks.
 
 tobii_wait_for_callbacks will not wait indefinitely. There is a timeout of some hundred milliseconds, after which 
 tobii_wait_for_callbacks will return **TOBII_ERROR_TIMED_OUT**. This does not indicate a failure - it is given as an 
 opportunity for the calling thread to perform its own internal housekeeping (like checking for exit conditions and the 
 like). It is valid to immediately call tobii_wait_for_callbacks again to resume waiting.
+
+*engine* is a pointer to a valid tobii_engine_t instance as created by calling tobii_engine_create. It can be passed in
+as NULL if there is no tobii_engine_t instance.
 
 *device_count* must be the number of devices in the array passed in the *devices* parameter.
 
@@ -1146,16 +1124,18 @@ or if the wait times out, tobii_wait_for_callbacks returns one of the following:
 -   **TOBII_ERROR_TIMED_OUT**
 
     This does not indicate a failure. A timeout happened before any data was received. Call tobii_wait_for_callbacks() 
-    again (it is not necessary to call tobii_device_process_callbacks(), as it doesn't have any new data to process).
+    again (it is not necessary to call tobii_device_process_callbacks() or tobii_engine_process_callbacks(), as it 
+    doesn't have any new data to process).
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    No valid device instance was provided. At least one valid pointer to a device instance must be provided. 
+    No valid device or engine instance was provided. At least one valid pointer to a device or engine instance must be
+    provided. 
 
 -   **TOBII_ERROR_CONFLICTING_API_INSTANCES** 
 
-    Every instance of device passed in must be created with the same instance of tobii_api_t. If different api instances 
-    were used, this error will be returned.
+    Every instance of device or engine passed in must be created with the same instance of tobii_api_t. If different
+    api instances where used, this error will be returned.
 
 -   **TOBII_ERROR_INTERNAL**
 
@@ -1165,7 +1145,7 @@ or if the wait times out, tobii_wait_for_callbacks returns one of the following:
 
 ### See also
 
-tobii_device_process_callbacks()
+tobii_device_process_callbacks(), tobii_engine_process_callbacks(),
 
 
 ### Example
@@ -1474,7 +1454,7 @@ tobii_update_timesync
 
 ### Function
 
-Synchronizes the system clock with the device's hardware clock.
+Makes a manual re-synchronization of system timestamps and device timestamps.
 
 
 ### Syntax
@@ -1486,11 +1466,10 @@ Synchronizes the system clock with the device's hardware clock.
 ### Remarks
 
 The clock on the device and the clock on the system it is connected to may drift over time, and therefore
-they need to be periodically synchronized. The system clock is used to generate timestamps for all streamed data and
-by tobii_system_clock. Only if either of these are of interest is it necessary to periodically synchronize,
-which is done by calling tobii_update_timesync every ~30 seconds.
-
-This operation is in its nature unreliable and may be subject to packet loss. 
+they need to be periodically re-synchronized. In the default usage scenario, when regularly calling
+tobii_wait_for_callbacks(), this re-sychronization is handled automatically at a pre-determined interval.
+When not using tobii_wait_for_callbacks, and instead relying on only tobii_device_process_callbacks, it is necessary
+to re-synchronize manually, which is done by calling tobii_update_timesync every ~30 seconds.
 
 *device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create or 
 tobii_device_create_ex.
@@ -1520,13 +1499,6 @@ the call fails, tobii_update_timesync returns one of the following:
     tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
     or tobii_license_key_retrieve().
     Calling tobii_update_timesync from within a callback function is not supported.
-
--   **TOBII_ERROR_CONNECTION_FAILED**
-    The connection to the device was lost. Call tobii_device_reconnect() to re-establish connection.
-
--   **TOBII_ERROR_NOT_SUPPORTED**
-    The function failed because the operation is not supported by the connected tracker.
-
 
 ### See also
 
@@ -2413,7 +2385,6 @@ tobii_wearable.h and tobii_advanced.h
 -   **TOBII_STREAM_GAZE_DATA**
 -   **TOBII_STREAM_DIGITAL_SYNCPORT**
 -   **TOBII_STREAM_DIAGNOSTICS_IMAGE**
--   **TOBII_STREAM_CUSTOM**
 
 *supported* must be a pointer to a valid tobii_supported_t instance. If tobii_stream_supported is successful, 
 *supported* will be set to  **TOBII_SUPPORTED** if the feature is supported, and **TOBII_NOT_SUPPORTED** if it is not.
@@ -2490,105 +2461,3 @@ tobii_capability_supported()
 @endcode
 */
 
-
-/**
-@fn TOBII_API tobii_error_t TOBII_CALL tobii_get_firmware_upgrade_state( tobii_device_t* device, tobii_firmware_upgrade_state_t* firmware_upgrade_state );
-@ingroup tobii
-
-tobii_get_firmware_upgrade_state
-----------------------
-
-### Function
-
-Ask what the current firmware upgrade status is
-
-
-### Syntax
-
-    #include <tobii/tobii.h>
-    tobii_error_t tobii_get_firmware_upgrade_state( tobii_device_t* device, 
-        tobii_firmware_upgrade_state_t* firmware_upgrade_state );
-
-
-### Remarks
-
-*device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create or 
-tobii_device_create_ex.
-
-*firmware_upgrade_state* must be a pointer to a valid tobii_firmware_upgrade_state_t instance.
- If tobii_get_firmware_upgrade_state is successful, *firmware_upgrade_state* will be set to  
-**TOBII_FIRMWARE_UPGRADE_STATE_IN_PROGRESS** or **TOBII_FIRMWARE_UPGRADE_STATE_NOT_IN_PROGRESS**
-depending on if there is an ongoing upgrade.
-
-
-### Return value
-
-If the call was successful **TOBII_ERROR_NO_ERROR** will be returned. If the call has failed one of the following errors
-will be returned:
-
--   **TOBII_ERROR_INVALID_PARAMETER**
-
-    The *device* or *firmware_upgrade_state* parameter has been passed in as NULL.
-
--   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
-
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
-    or tobii_license_key_retrieve().
-    Calling tobii_stream_supported from within a callback function is not supported.
-
--   **TOBII_ERROR_INSUFFICIENT_LICENSE**
-
-    The provided license was not valid, or has been blacklisted.
-
-### See also
-
-
-### Example
-
-@code{.c}
-
-    #include <tobii/tobii.h>
-    #include <stdio.h>
-    #include <assert.h>
-
-    static void url_receiver( char const* url, void* user_data )
-    {
-        char* buffer = (char*)user_data;
-        if( *buffer != '\0' ) return; // only keep first value
-
-        if( strlen( url ) < 256 )
-            strcpy( buffer, url );
-    }
-
-    int main()
-    {
-        tobii_api_t* api;
-        tobii_error_t error = tobii_api_create( &api, NULL, NULL );
-        assert( error == TOBII_ERROR_NO_ERROR );
-
-        char url[ 256 ] = { 0 };
-        error = tobii_enumerate_local_device_urls( api, url_receiver, url );
-        assert( error == TOBII_ERROR_NO_ERROR && *url != '\0' );
-
-        tobii_device_t* device;
-        error = tobii_device_create( api, url, &device );
-        assert( error == TOBII_ERROR_NO_ERROR );
-
-        tobii_firmware_upgrade_state_t state;
-        error = tobii_get_firmware_upgrade_state( device, &state );
-        assert( error == TOBII_ERROR_NO_ERROR );
-
-        if( state == TOBII_FIRMWARE_UPGRADE_STATE_IN_PROGRESS )
-            printf( "There is an upgrade in progress." );
-        else
-            printf( "There is no upgrade in progress." );
-
-        tobii_device_destroy( device );
-        tobii_api_destroy( api );
-
-        return 0;
-    }
-
-@endcode
-*/

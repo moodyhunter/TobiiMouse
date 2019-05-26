@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>556</width>
-    <height>375</height>
+    <width>803</width>
+    <height>519</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,17 +17,59 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="startButton">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>100</y>
-      <width>85</width>
-      <height>33</height>
+      <x>20</x>
+      <y>40</y>
+      <width>91</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>Start!</string>
+     <string>Gaze Position:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="gazePositionLabel">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>40</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>posi</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="GetAllDevices">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>180</y>
+      <width>151</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Get All Devices</string>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="tobiiDevicesList">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>180</y>
+      <width>256</width>
+      <height>192</height>
+     </rect>
     </property>
    </widget>
   </widget>
@@ -36,14 +78,15 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>556</width>
-     <height>29</height>
+     <width>803</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -64,6 +107,11 @@
   <action name="actionAbout_Qt_2">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>&amp;Quit</string>
    </property>
   </action>
  </widget>

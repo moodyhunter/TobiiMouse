@@ -19,15 +19,6 @@ permission is obtained from Tobii AB.
 extern "C" {
 #endif
 
-typedef enum tobii_wearable_tracking_improvement_t
-{
-    TOBII_WEARABLE_TRACKING_IMPROVEMENT_USER_POSITION_HMD,
-    TOBII_WEARABLE_TRACKING_IMPROVEMENT_CALIBRATION_CONTAINS_POOR_DATA,
-    TOBII_WEARABLE_TRACKING_IMPROVEMENT_CALIBRATION_DIFFERENT_BRIGHTNESS,
-    TOBII_WEARABLE_TRACKING_IMPROVEMENT_IMAGE_QUALITY,
-    TOBII_WEARABLE_TRACKING_IMPROVEMENT_INCREASE_EYE_RELIEF,
-} tobii_wearable_tracking_improvement_t;
-
 typedef struct tobii_wearable_eye_t
 {
     tobii_validity_t gaze_origin_validity;
@@ -44,9 +35,6 @@ typedef struct tobii_wearable_eye_t
 
     tobii_validity_t pupil_position_in_sensor_area_validity;
     float pupil_position_in_sensor_area_xy[ 2 ];
-
-    tobii_validity_t position_guide_validity;
-    float position_guide_xy[ 2 ];
 } tobii_wearable_eye_t;
 
 typedef struct tobii_wearable_data_t
@@ -62,13 +50,9 @@ typedef struct tobii_wearable_data_t
     float gaze_origin_combined_mm_xyz[ 3 ];
     tobii_validity_t gaze_direction_combined_validity;
     float gaze_direction_combined_normalized_xyz[ 3 ];
-    tobii_validity_t convergence_distance_validity;
-    float convergence_distance_mm;
-    int tracking_improvements_count;
-    tobii_wearable_tracking_improvement_t tracking_improvements[ 10 ];
 } tobii_wearable_data_t;
 
-typedef void (*tobii_wearable_data_callback_t)( tobii_wearable_data_t const* data, void* user_data );
+typedef void ( *tobii_wearable_data_callback_t )( tobii_wearable_data_t const* data, void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_wearable_data_subscribe( tobii_device_t* device,
     tobii_wearable_data_callback_t callback, void* user_data );
 
@@ -199,9 +183,8 @@ This function will be called when there is new data available. It is called with
             if it is.
 
         -   *eye_openness*
-            A float that represents how open the user's eye is, where 1.0 means the eye is fully open and 0.0 the eye is fully closed.
-
-            Some devices are only be able to report fully open and fully closed.
+            A float that represents how open the user's eye is, defined as the ratio between the height of the eye
+            divided by its width, making a fully open eye yield a value of approximately 0.5.
 
         -   *pupil_position_in_sensor_area_validity*
             **TOBII_VALIDITY_INVALID** if *pupil_position_in_sensor_area_xy* is not valid for this frame,
@@ -213,18 +196,6 @@ This function will be called when there is new data available. It is called with
             (1, 1): is the bottom right of sensor area, from the sensor's perspective
             In systems where multiple cameras observe both eyes, this signal gives the pupil position in the primary sensor.
             Useful for detecting and visualizing how well the eyes are centered in the sensor images.
-            
-        -   *position_guide_validity*
-            **TOBII_VALIDITY_INVALID** if *position_guide_xy* is not valid for this frame,
-            **TOBII_VALIDITY_VALID** if it is.
-
-        -   *position_guide_xy*
-            An array of two floats, for the x and y normalized positions per eye.
-            The position should be compensated with the offset between lens and camera optical axis.
-            0.5: is the optimal position
-            0.3-0.7: is when the position is ok and all gaze use cases are supported (green eyes in the position guide app)
-            0-0.3 and 0.7-1: is when the system might still output gaze but performance is degraded (yellow eyes)
-            <0 and >1: is when any gaze values are not reliable. No gaze use cases are supported (red eyes)
 
     -   *right*
         This is another instance of the same struct as in *left*, but which holds data related to the right eye of the user.
@@ -251,22 +222,6 @@ This function will be called when there is new data available. It is called with
 
         This field will only be set if you have the capability TOBII_CAPABILITY_COMBINED_GAZE_VR. See tobii_capability_supported().
 
-    -   *tracking_improvements_count*
-        The count gives the no of tracking improvements available in the array of **tracking_improvements**. If the count is 0 meaning there is no imrovement available.
-
-    -   *tracking_improvements*
-        This is an array containing the available tracking improvements. The array elements could be among the following enum values
-        **TOBII_WEARABLE_TRACKING_IMPROVEMENT_USER_POSITION_HMD** if the HMD position needs adjustment.
-        **TOBII_WEARABLE_TRACKING_IMPROVEMENT_CALIBRATION_CONTAINS_POOR_DATA** if the recalibration is required due to calibration contains poor data.
-        **TOBII_WEARABLE_TRACKING_IMPROVEMENT_CALIBRATION_DIFFERENT_BRIGHTNESS** if the recalibration is required with different brightness level.
-        **TOBII_WEARABLE_TRACKING_IMPROVEMENT_IMAGE_QUALITY** if the image quality needs to be improved.
-        **TOBII_WEARABLE_TRACKING_IMPROVEMENT_INCREASE_EYE_RELIEF** if the eye relief is required to be increased.
-
-    -   *convergence_distance_validity*
-        **TOBII_VALIDITY_INVALID** if *convergence_distance_mm* is not valid for this frame, **TOBII_VALIDITY_VALID** if it is.
-
-    -   *convergence_distance_mm*
-        convergence distance in mm. It is the distance from the midpoint between both left and right cornea position and the intersection point.
 -   *user_data*
     This is the custom pointer sent in when registering the callback.
 

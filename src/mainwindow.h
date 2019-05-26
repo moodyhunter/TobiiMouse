@@ -15,13 +15,14 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void StartReadGaze();
 
 private slots:
-    void on_startButton_clicked();
+    void on_GetAllDevices_clicked();
 
 private:
     Ui::MainWindow *ui;
-    Devices::TobiiInteractive *tobii;
+    TobiiInteractive *tobii;
 };
 
 #endif // MAINWINDOW_H

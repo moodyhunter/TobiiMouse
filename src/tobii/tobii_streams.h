@@ -19,14 +19,14 @@ permission is obtained from Tobii AB.
 extern "C" {
 #endif
 
-typedef struct tobii_gaze_point_t 
+typedef struct tobii_gaze_point_t
 {
     int64_t timestamp_us;
     tobii_validity_t validity;
     float position_xy[ 2 ];
 } tobii_gaze_point_t;
 
-typedef void (*tobii_gaze_point_callback_t)( tobii_gaze_point_t const* gaze_point, void* user_data );
+typedef void ( *tobii_gaze_point_callback_t )( tobii_gaze_point_t const* gaze_point, void* user_data );
 
 TOBII_API tobii_error_t TOBII_CALL tobii_gaze_point_subscribe( tobii_device_t* device,
     tobii_gaze_point_callback_t callback, void* user_data );
@@ -42,7 +42,7 @@ typedef struct tobii_gaze_origin_t
     float right_xyz[ 3 ];
 } tobii_gaze_origin_t;
 
-typedef void (*tobii_gaze_origin_callback_t)( tobii_gaze_origin_t const* gaze_origin, void* user_data );
+typedef void ( *tobii_gaze_origin_callback_t )( tobii_gaze_origin_t const* gaze_origin, void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_gaze_origin_subscribe( tobii_device_t* device,
     tobii_gaze_origin_callback_t callback, void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_gaze_origin_unsubscribe( tobii_device_t* device );
@@ -57,8 +57,7 @@ typedef struct tobii_eye_position_normalized_t
     float right_xyz[ 3 ];
 } tobii_eye_position_normalized_t;
 
-typedef void (*tobii_eye_position_normalized_callback_t)( tobii_eye_position_normalized_t const* eye_position, 
-    void* user_data );
+typedef void ( *tobii_eye_position_normalized_callback_t )( tobii_eye_position_normalized_t const* eye_position, void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_eye_position_normalized_subscribe( tobii_device_t* device,
     tobii_eye_position_normalized_callback_t callback, void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_eye_position_normalized_unsubscribe( tobii_device_t* device );
@@ -71,7 +70,7 @@ typedef enum tobii_user_presence_status_t
     TOBII_USER_PRESENCE_STATUS_PRESENT,
 } tobii_user_presence_status_t;
 
-typedef void (*tobii_user_presence_callback_t)( tobii_user_presence_status_t status, int64_t timestamp_us, 
+typedef void ( *tobii_user_presence_callback_t )( tobii_user_presence_status_t status, int64_t timestamp_us,
     void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_user_presence_subscribe( tobii_device_t* device,
     tobii_user_presence_callback_t callback, void* user_data );
@@ -87,7 +86,7 @@ typedef struct tobii_head_pose_t
     float rotation_xyz[ 3 ];
 } tobii_head_pose_t;
 
-typedef void (*tobii_head_pose_callback_t)( tobii_head_pose_t const* head_pose, void* user_data );
+typedef void( *tobii_head_pose_callback_t )( tobii_head_pose_t const* head_pose, void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_head_pose_subscribe( tobii_device_t* device,
     tobii_head_pose_callback_t callback, void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_head_pose_unsubscribe( tobii_device_t* device );
@@ -104,7 +103,7 @@ typedef enum tobii_notification_type_t
     TOBII_NOTIFICATION_TYPE_DEVICE_PAUSED_STATE_CHANGED,
     TOBII_NOTIFICATION_TYPE_CALIBRATION_ENABLED_EYE_CHANGED,
     TOBII_NOTIFICATION_TYPE_CALIBRATION_ID_CHANGED,
-    TOBII_NOTIFICATION_TYPE_COMBINED_GAZE_EYE_SELECTION_CHANGED,
+    TOBII_NOTIFICATION_TYPE_COMBINED_GAZE_FACTOR_CHANGED,
     TOBII_NOTIFICATION_TYPE_FAULTS_CHANGED,
     TOBII_NOTIFICATION_TYPE_WARNINGS_CHANGED,
     TOBII_NOTIFICATION_TYPE_FACE_TYPE_CHANGED,
@@ -137,26 +136,12 @@ typedef struct tobii_notification_t
 
 } tobii_notification_t;
 
-typedef void (*tobii_notifications_callback_t)( tobii_notification_t const* notification,
+typedef void( *tobii_notifications_callback_t )( tobii_notification_t const* notification,
     void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_notifications_subscribe( tobii_device_t* device,
     tobii_notifications_callback_t callback, void* user_data );
 TOBII_API tobii_error_t TOBII_CALL tobii_notifications_unsubscribe( tobii_device_t* device );
 
-typedef struct tobii_user_position_guide_t
-{
-    int64_t timestamp_us;
-    tobii_validity_t left_position_validity;
-    float left_position_normalized_xyz[ 3 ];
-    tobii_validity_t right_position_validity;
-    float right_position_normalized_xyz[ 3 ];
-} tobii_user_position_guide_t;
-
-typedef void (*tobii_user_position_guide_callback_t)( 
-    tobii_user_position_guide_t const * user_position_guide, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_user_position_guide_subscribe( tobii_device_t* device, 
-    tobii_user_position_guide_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_user_position_guide_unsubscribe( tobii_device_t* device );
 
 
 #ifdef __cplusplus
@@ -246,7 +231,38 @@ This function will be called when there is new gaze data available. It is called
 ### Return value
 
 If the operation is successful, tobii_gaze_point_subscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_gaze_point_subscribe returns an error code specific to the device.
+fails, tobii_gaze_point_subscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* or *callback* parameters were passed in as NULL. 
+
+-   **TOBII_ERROR_ALREADY_SUBSCRIBED**
+
+    A subscription for gaze points were already made. There can only be one callback registered at a time.
+    To change to another callback, first call tobii_gaze_point_unsubscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support the stream. This error is returned if the API is called with an old device and/or that is
+    running outdated firmware.
+
+-   **TOBII_ERROR_TOO_MANY_SUBSCRIBERS**
+
+    Too many subscribers for the requested stream. Tobii eye trackers can have a limitation on the number of concurrent
+    subscribers to specific streams due to high bandwidth and/or high frequency of the data stream.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_gaze_point_subscribe from within a callback function is not supported.
 
 ### See also
 
@@ -347,7 +363,33 @@ Stops listening to gaze point stream that was subscribed to by a call to tobii_g
 ### Return value
 
 If the operation is successful, tobii_gaze_point_unsubscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_gaze_point_unsubscribe returns an error code specific to the device.
+fails, tobii_gaze_point_unsubscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* parameter was passed in as NULL. 
+
+-   **TOBII_ERROR_NOT_SUBSCRIBED**
+
+    There was no subscription for gaze points. It is only valid to call tobii_gaze_point_unsubscribe()
+    after first successfully calling tobii_gaze_point_subscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support the stream. This error is returned if the API is called with an old device and/or that is
+    running outdated firmware.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_gaze_point_unsubscribe from within a callback function is not supported.
 
 ### See also
 
@@ -429,7 +471,38 @@ This function will be called when there is new gaze origin data available. It is
 ### Return value
 
 If the operation is successful, tobii_gaze_origin_subscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_gaze_origin_subscribe returns an error code specific to the device.
+fails, tobii_gaze_origin_subscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* parameter was passed in as NULL. 
+
+-   **TOBII_ERROR_ALREADY_SUBSCRIBED**
+
+    A subscription for gaze origins were already made. There can only be one callback registered at a time.
+    To change to another callback, first call tobii_gaze_origin_unsubscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support the stream. This error is returned if the API is called with an old device and/or that is
+    running outdated firmware.
+
+-   **TOBII_ERROR_TOO_MANY_SUBSCRIBERS**
+
+    Too many subscribers for the requested stream. Tobii eye trackers can have a limitation on the number of concurrent
+    subscribers to specific streams due to high bandwidth and/or high frequency of the data stream.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_gaze_origin_subscribe from within a callback function is not supported.
 
 ### See also
 
@@ -540,7 +613,33 @@ Stops listening to gaze origin stream that was subscribed to by a call to tobii_
 ### Return value
 
 If the operation is successful, tobii_gaze_origin_unsubscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_gaze_origin_unsubscribe returns an error code specific to the device.
+fails, tobii_gaze_origin_unsubscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* parameter was passed in as NULL. 
+
+-   **TOBII_ERROR_NOT_SUBSCRIBED**
+
+    There was no subscription for gaze origins. It is only valid to call tobii_gaze_origin_unsubscribe()
+    after first successfully calling tobii_gaze_origin_subscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support the stream. This error is returned if the API is called with an old device and/or that is
+    running outdated firmware.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_gaze_origin_unsubscribe from within a callback function is not supported.
 
 ### See also
 
@@ -626,7 +725,38 @@ This function will be called when there is new normalized eye position data avai
 ### Return value
 
 If the operation is successful, tobii_eye_position_normalized_subscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_eye_position_normalized_subscribe returns an error code specific to the device.
+fails, tobii_eye_position_normalized_subscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* or *callback* parameter were passed in as NULL. 
+
+-   **TOBII_ERROR_ALREADY_SUBSCRIBED**
+
+    A subscription for normalized eye positions were already made. There can only be one callback registered at a time.
+    To change to another callback, first call tobii_eye_position_normalized_unsubscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support the stream. This error is returned if the API is called with an old device and/or that is
+    running outdated firmware.
+
+-   **TOBII_ERROR_TOO_MANY_SUBSCRIBERS**
+
+    Too many subscribers for the requested stream. Tobii eye trackers can have a limitation on the number of concurrent
+    subscribers to specific streams due to high bandwidth and/or high frequency of the data stream.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_eye_position_normalized_subscribe from within a callback function is not supported.
 
 ### See also
 
@@ -738,7 +868,33 @@ Stops listening to normalized eye position stream that was subscribed to by a ca
 ### Return value
 
 If the operation is successful, tobii_eye_position_normalized_unsubscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_eye_position_normalized_unsubscribe returns an error code specific to the device.
+fails, tobii_eye_position_normalized_unsubscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* parameter was passed in as NULL. 
+
+-   **TOBII_ERROR_NOT_SUBSCRIBED**
+
+    There was no subscription for normalized eye positions. It is only valid to call tobii_eye_position_normalized_unsubscribe()
+    after first successfully calling tobii_eye_position_normalized_subscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support the stream. This error is returned if the API is called with an old device and/or that is
+    running outdated firmware.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_eye_position_normalized_unsubscribe from within a callback function is not supported.
 
 ### See also
 
@@ -809,7 +965,38 @@ This function will be called when there is a change in presence state. It is cal
 ### Return value
 
 If the operation is successful, tobii_user_presence_subscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_user_presence_subscribe returns an error code specific to the device.
+fails, tobii_user_presence_subscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* or *callback* parameter were passed in as NULL. 
+
+-   **TOBII_ERROR_ALREADY_SUBSCRIBED**
+
+    A subscription for presence data was already made. There can only be one callback registered at a time.
+    To change to another callback, first call tobii_user_presence_unsubscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support the stream. This error is returned if the API is called with an old device and/or that is
+    running outdated firmware.
+
+-   **TOBII_ERROR_TOO_MANY_SUBSCRIBERS**
+
+    Too many subscribers for the requested stream. Tobii eye trackers can have a limitation on the number of concurrent
+    subscribers to specific streams due to high bandwidth and/or high frequency of the data stream.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_user_presence_subscribe from within a callback function is not supported.
 
 ### See also
 
@@ -918,7 +1105,33 @@ Stops listening to presence stream that was subscribed to by a call to tobii_use
 ### Return value
 
 If the operation is successful, tobii_user_presence_unsubscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_user_presence_unsubscribe returns an error code specific to the device.
+fails, tobii_user_presence_unsubscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* parameter was passed in as NULL.
+
+-   **TOBII_ERROR_NOT_SUBSCRIBED**
+
+    There was no subscription for presence. It is only valid to call tobii_user_presence_unsubscribe()
+    after first successfully calling tobii_user_presence_subscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support the stream. This error is returned if the API is called with an old device and/or that is
+    running outdated firmware.
+
+-   **TOBII_ERROR_INTERNAL**	
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_user_presence_unsubscribe from within a callback function is not supported.
 
 ### See also
 
@@ -1004,7 +1217,43 @@ following parameters:
 ### Return value
 
 If the operation is successful, tobii_head_pose_subscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_head_pose_subscribe returns an error code specific to the device.
+fails, tobii_head_pose_subscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* or *callback* parameter were passed in as NULL. 
+
+-   **TOBII_ERROR_ALREADY_SUBSCRIBED**
+
+    A subscription for head pose were already made. There can only be one callback registered at a time.
+    To change to another callback, first call tobii_head_pose_unsubscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support head pose. This error is returned if the API is called with an old device which
+    doesn't support head pose.
+
+-   **TOBII_ERROR_TOO_MANY_SUBSCRIBERS**
+
+    Too many subscribers for the requested stream. Tobii eye trackers can have a limitation on the number of concurrent
+    subscribers to specific streams due to high bandwidth and/or high frequency of the data stream.
+
+-   **TOBII_ERROR_NOT_AVAILABLE**
+
+    Head pose is not available as the software component responsible for providing it is not running. Head pose requires
+    the Tobii Eye Tracking Core Software to be installed and running.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support.
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_head_pose_subscribe from within a callback function is not supported.
 
 ### See also
 
@@ -1110,7 +1359,37 @@ Stops listening to the head pose stream that was subscribed to by a call to tobi
 ### Return value
 
 If the operation is successful, tobii_head_pose_unsubscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_head_pose_unsubscribe returns an error code specific to the device.
+fails, tobii_head_pose_unsubscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* parameter was passed in as NULL. 
+
+-   **TOBII_ERROR_NOT_SUBSCRIBED**
+
+    There was no subscription for head pose. It is only valid to call tobii_head_pose_unsubscribe()
+    after first successfully calling tobii_head_pose_subscribe().
+
+-   **TOBII_ERROR_NOT_SUPPORTED**
+
+    The device doesn't support head pose. This error is returned if the API is called with an old device which
+    doesn't support head pose.
+
+-   **TOBII_ERROR_NOT_AVAILABLE**
+
+    Head pose is not available as the software component responsible for providing it is not running.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_head_pose_unsubscribe from within a callback function is not supported.
 
 ### See also
 
@@ -1173,8 +1452,8 @@ following parameters:
         **TOBII_NOTIFICATION_TYPE_POWER_SAVE_STATE_CHANGED**
         **TOBII_NOTIFICATION_TYPE_DEVICE_PAUSED_STATE_CHANGED**
         **TOBII_NOTIFICATION_TYPE_CALIBRATION_ENABLED_EYE_CHANGED**
-        **TOBII_NOTIFICATION_TYPE_COMBINED_GAZE_EYE_SELECTION_CHANGED**
         **TOBII_NOTIFICATION_TYPE_CALIBRATION_ID_CHANGED**
+        **TOBII_NOTIFICATION_TYPE_COMBINED_GAZE_FACTOR_CHANGED**
         **TOBII_NOTIFICATION_TYPE_FAULTS_CHANGED**
         **TOBII_NOTIFICATION_TYPE_WARNINGS_CHANGED**
         **TOBII_NOTIFICATION_TYPE_FACE_TYPE_CHANGED**
@@ -1207,7 +1486,33 @@ following parameters:
 ### Return value
 
 If the operation is successful, tobii_notifications_subscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_notifications_subscribe returns an error code specific to the device.
+fails, tobii_notifications_subscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* or *callback* parameters were passed in as NULL. 
+
+-   **TOBII_ERROR_ALREADY_SUBSCRIBED**
+
+    A subscription for notifications were already made. There can only be one callback registered at a time.
+    To change to another callback, first call tobii_notifications_unsubscribe().
+
+-   **TOBII_ERROR_TOO_MANY_SUBSCRIBERS**
+
+    Too many subscribers for the requested stream. Tobii eye trackers can have a limitation on the number of concurrent
+    subscribers to specific streams due to high bandwidth and/or high frequency of the data stream.
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_notifications_subscribe from within a callback function is not supported.
 
 ### See also
 
@@ -1314,7 +1619,28 @@ Stops listening to notifications stream that was subscribed to by a call to tobi
 ### Return value
 
 If the operation is successful, tobii_notifications_unsubscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_notifications_unsubscribe returns an error code specific to the device.
+fails, tobii_notifications_unsubscribe returns one of the following:
+
+-   **TOBII_ERROR_INVALID_PARAMETER**
+
+    The *device* parameter was passed in as NULL.
+
+-   **TOBII_ERROR_NOT_SUBSCRIBED**
+
+    There was no subscription for notifications. It is only valid to call tobii_notifications_unsubscribe()
+    after first successfully calling tobii_notifications_subscribe().
+
+-   **TOBII_ERROR_INTERNAL**
+
+    Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
+    the support
+
+-   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
+
+    The function failed because it was called from within a callback triggered from an API call such as 
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    or tobii_license_key_retrieve().
+    Calling tobii_notifications_unsubscribe from within a callback function is not supported.
 
 ### See also
 
@@ -1327,187 +1653,4 @@ See tobii_notifications_subscribe()
 
 */
 
-/**
-@fn TOBII_API tobii_error_t TOBII_CALL tobii_user_position_guide_subscribe( tobii_device_t* device, tobii_user_position_guide_callback_t callback, void* user_data );
-@ingroup tobii_streams
 
-tobii_user_position_guide_subscribe
--------------------------
-
-### Function
-
-Start listening to the user position guide stream, which is used to help a user position their eyes in the track box correctly.
-TODO: More and more indepth description of the user position guide stream
-
-
-### Syntax
-
-    #include <tobii/tobii_streams.h>
-    tobii_error_t TOBII_CALL tobii_user_position_guide_subscribe( tobii_device_t* device,
-        tobii_user_position_guide_callback_t callback, void* user_data );
-
-
-### Remarks
-
-*device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create.
-
-*callback* is a function pointer to a function with the prototype:
-    void user_position_guide_callback( tobii_user_position_guide_t const * user_position_guide, void* user_data );
-
-This function will be called when there is a new position guide package to be sent to the subscriber. It is called with the
-following parameters:
-
--   *user_position_guide*
-    -   *timestamp_us*
-
-        Timestamp value for when the user position guide was calculated, measured in microseconds (us). The epoch is 
-        undefined, so these timestamps are only useful for calculating the time elapsed between a pair of values. 
-        The function tobii_system_clock() can be used to retrieve a timestamp using the same clock and same relative 
-        values as this timestamp.
-
-    -   *left_position_validity*
-
-        Indicates the validity of the left_position_xyz field. **TOBII_VALIDITY_INVALID** if the field is not valid, **TOBI_VALIDITY_VALID** if it is.
-
-    -   *left_position_normalized_xyz*
-
-        An array of three floats, for the x, y and z coordinates TODO: Description needed
-
-    -   *right_position_validity*
-
-        Indicates the validity of the right_position_xyz field. **TOBII_VALIDITY_INVALID** if the field is not valid, **TOBI_VALIDITY_VALID** if it is.
-
-    -   *right_position_normalized_xyz*
-
-        An array of three floats, for the x, y and z coordinates TODO: Description needed
-
--   *user_data*
-
-    This is the custom pointer sent in when registering the callback.
-
-*user_data* custom pointer which will be passed unmodified to the notification callback.
-
-
-### Return value
-
-If the operation is successful, tobii_user_position_guide_subscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_user_position_guide_subscribe returns an error code specific to the device.
-
-### See also
-
-tobii_user_position_guide_unsubscribe()
-
-
-### Example
-
-@code{.c}
-
-    #include <tobii/tobii_streams.h>
-    #include <stdio.h>
-    #include <assert.h>
-
-    void user_position_guide_callback( tobii_user_position_guide_t const* position_guide, void* user_data )
-    {
-        if( position_guide->left_position_validity == TOBII_VALIDITY_VALID )
-            printf( "Left position: (%f, %f, %f)\n",
-                position_guide->left_position_normalized_xyz[ 0 ],
-                position_guide->left_position_normalized_xyz[ 1 ],
-                position_guide->left_position_normalized_xyz[ 2 ] );
-
-        if( position_guide->right_position_validity == TOBII_VALIDITY_VALID )
-            printf( "Left position: (%f, %f, %f)\n",
-                position_guide->right_position_normalized_xyz[ 0 ],
-                position_guide->right_position_normalized_xyz[ 1 ],
-                position_guide->right_position_normalized_xyz[ 2 ] );
-
-    }
-
-    static void url_receiver( char const* url, void* user_data )
-    {
-        char* buffer = (char*)user_data;
-        if( *buffer != '\0' ) return; // only keep first value
-
-        if( strlen( url ) < 256 )
-            strcpy( buffer, url );
-    }
-
-    int main()
-    {
-        tobii_api_t* api;
-        tobii_error_t error = tobii_api_create( &api, NULL, NULL );
-        assert( error == TOBII_ERROR_NO_ERROR );
-
-        char url[ 256 ] = { 0 };
-        error = tobii_enumerate_local_device_urls( api, url_receiver, url );
-        assert( error == TOBII_ERROR_NO_ERROR && *url != '\0' );
-
-        tobii_device_t* device;
-        error = tobii_device_create( api, url, &device );
-        assert( error == TOBII_ERROR_NO_ERROR );
-
-        error = tobii_user_position_guide_subscribe( device, user_position_guide_callback, 0 );
-        assert( error == TOBII_ERROR_NO_ERROR );
-
-        int is_running = 1000; // in this sample, exit after some iterations
-        while( --is_running > 0 )
-        {
-            error = tobii_wait_for_callbacks( NULL, 1, &device );
-            assert( error == TOBII_ERROR_NO_ERROR || error == TOBII_ERROR_TIMED_OUT );
-
-            error = tobii_device_process_callbacks( device );
-            assert( error == TOBII_ERROR_NO_ERROR );
-        }
-
-        error = tobii_user_position_guide_unsubscribe( device );
-        assert( error == TOBII_ERROR_NO_ERROR );
-
-        error = tobii_device_destroy( device );
-        assert( error == TOBII_ERROR_NO_ERROR );
-
-        error = tobii_api_destroy( api );
-        assert( error == TOBII_ERROR_NO_ERROR );
-        return 0;
-    }
-
-@endcode
-
-*/
-
-/**
-@fn TOBII_API tobii_error_t TOBII_CALL tobii_user_position_guide_unsubscribe( tobii_device_t* device );
-@ingroup tobii_streams
-
-tobii_user_position_guide_unsubscribe
----------------------------
-
-### Function
-
-Stops listening to the user position guide that was subscribed to by a call to tobii_user_position_guide_subscribe().
-
-
-### Syntax
-
-    #include <tobii/tobii_streams.h>
-    tobii_error_t TOBII_CALL tobii_user_position_guide_unsubscribe( tobii_device_t* device );
-
-
-### Remarks
-
-*device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create.
-
-
-### Return value
-
-If the operation is successful, tobii_user_position_guide_unsubscribe returns **TOBII_ERROR_NO_ERROR**. If the call
-fails, tobii_user_position_guide_unsubscribe returns an error code specific to the device.
-
-### See also
-
-tobii_user_position_guide_subscribe()
-
-
-### Example
-
-See tobii_user_position_guide_subscribe()
-
-*/
