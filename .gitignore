@@ -39,3 +39,4 @@ src/build
 
 # Qt Creator .user files
 *.user
+*.user*
