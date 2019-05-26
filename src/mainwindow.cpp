@@ -6,20 +6,26 @@
 #include <QThread>
 #include <list>
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    tobii(new TobiiInteractive())
+void MainWindow::reload_tobii_device_list()
 {
-    ui->setupUi(this);
+    tobii->reload_devices();
     auto devices = tobii->devices;
 
     QStringList* deviceStringList = new QStringList();
     for (size_t i = 0; i < devices.size(); i++) {
         deviceStringList->append(QString::fromStdString(devices[i]));
     }
-
+    ui->tobiiDevicesList->clear();
     ui->tobiiDevicesList->addItems(*deviceStringList);
+}
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow),
+    tobii(new TobiiInteractive())
+{
+    ui->setupUi(this);
+    reload_tobii_device_list();
 }
 
 MainWindow::~MainWindow()
@@ -31,12 +37,18 @@ MainWindow::~MainWindow()
 void MainWindow::StartReadGaze()
 {
     //QThread* thread = QThread::create(QFunctionPointer(process));
-    on_GetAllDevices_clicked();
+    //on_GetAllDevices_clicked();
     //thread->start();
 }
-
-
-void MainWindow::on_GetAllDevices_clicked()
+void MainWindow::on_reloadListButton_clicked()
 {
-    tobii->testmain();
+    reload_tobii_device_list();
+}
+
+void MainWindow::on_useSelectedDeviceButton_clicked()
+{
+    if(ui->tobiiDevicesList->selectedItems().count() > 0){
+        QString currentSelected = ui->tobiiDevicesList->selectedItems().first()->text();
+        tobii->start_subscribe_gaze(currentSelected.toStdString().c_str());
+    }
 }

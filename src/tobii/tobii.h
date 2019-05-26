@@ -128,9 +128,13 @@ TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_local_device_urls_ex( tobii_a
 typedef struct tobii_engine_t tobii_engine_t;
 typedef struct tobii_device_t tobii_device_t;
 
+// Workaround of different apis.
+#ifdef __WIN32
 TOBII_API tobii_error_t TOBII_CALL tobii_wait_for_callbacks( tobii_engine_t* engine, int device_count, 
     tobii_device_t* const* devices );
-
+#else
+TOBII_API tobii_error_t TOBII_CALL tobii_wait_for_callbacks( int device_count, tobii_device_t* const* devices );
+#endif
 
 TOBII_API tobii_error_t TOBII_CALL tobii_device_create( tobii_api_t* api, char const* url, tobii_device_t** device );
 

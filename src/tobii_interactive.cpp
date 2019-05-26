@@ -19,6 +19,9 @@ TobiiInteractive::TobiiInteractive() noexcept {
     devices = list_devices();
 }
 
+void TobiiInteractive::reload_devices(){
+    devices = list_devices();
+}
 
 static tobii_error_t reconnect( tobii_device_t* device )
 {
@@ -38,7 +41,7 @@ void TobiiInteractive::gaze_point_callback( tobii_gaze_point_t const* gaze_point
 {
     assert(user_data == nullptr);
     if( gaze_point->validity == TOBII_VALIDITY_VALID )
-        cout << "Gaze point: " << gaze_point->position_xy[ 0 ] << gaze_point->position_xy[ 1 ] << endl;
+        cout << "Gaze point: " << gaze_point->position_xy[ 0 ] << " - " << gaze_point->position_xy[ 1 ] << endl;
 //        printf( "Gaze point: %f, %f\n",
 //                static_cast<double>(),
 //                static_cast<double>();
@@ -60,30 +63,29 @@ vector<string> TobiiInteractive::list_devices()
     return result;
 }
 
-int TobiiInteractive::testmain()
-{
-    const string first_address = devices.front();
-    cout << first_address << endl;
-
-    tobii_device_t* device;
-    lasterr = tobii_device_create( api, first_address.c_str(), &device );
-
+int TobiiInteractive::start_subscribe_gaze(const char* deviceAddressUrl){
+    lasterr = tobii_device_create(api, deviceAddressUrl, &currentDevice);
     //"tobii-ttp://IS404-100107046346"
-    cout << first_address << endl;
     assert( lasterr == TOBII_ERROR_NO_ERROR );
 
     // Create atomic used for inter thread communication
     std::atomic<bool> exit_thread( false );
-
     // Start the background processing thread before subscribing to data
+    tobii_device_t* device = currentDevice;
     std::thread thread(
         [&exit_thread, device]()
         {
             while( !exit_thread )
             {
                 // Do a timed blocking wait for new gaze data, will time out after some hundred milliseconds
-                auto error = tobii_wait_for_callbacks( nullptr, 1, &device );
 
+                // I don't know why they have two different functions for Windows and Linux.....
+                // See: tobii.h:131
+#ifdef __WIN32
+                auto error = tobii_wait_for_callbacks( nullptr, 1, &device );
+#else
+                auto error = tobii_wait_for_callbacks( 1, &device );
+#endif
                 if( error == TOBII_ERROR_TIMED_OUT ) continue; // If timed out, redo the wait for callbacks call
 
                 if( error == TOBII_ERROR_CONNECTION_FAILED )
@@ -122,9 +124,9 @@ int TobiiInteractive::testmain()
                     return;
                 }
             }
-        } );
+    } );
     // Start subscribing to gaze and supply lambda callback function to handle the gaze point data
-    lasterr = tobii_gaze_point_subscribe( device,
+    lasterr = tobii_gaze_point_subscribe( currentDevice,
         []( tobii_gaze_point_t const* gaze_point, void* user_data )
         {
             (void) user_data; // Unused parameter
@@ -134,13 +136,19 @@ int TobiiInteractive::testmain()
             else
                 std::cout << "Gaze point: " << gaze_point->timestamp_us << " INVALID" << std::endl;
         }, nullptr );
+
     if( lasterr != TOBII_ERROR_NO_ERROR )
     {
         std::cerr << "Failed to subscribe to gaze stream." << std::endl;
         exit_thread = true;
         thread.join();
-        tobii_device_destroy( device );
+        tobii_device_destroy( currentDevice );
         tobii_api_destroy( api );
         return 1;
     }
+    // TODO THIS SHOULD BE REMOVED!!!
+    while(true){
+        std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
+    }
+    return 0;
 }

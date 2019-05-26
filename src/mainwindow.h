@@ -16,9 +16,12 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void StartReadGaze();
+    void reload_tobii_device_list();
 
 private slots:
-    void on_GetAllDevices_clicked();
+    void on_reloadListButton_clicked();
+
+    void on_useSelectedDeviceButton_clicked();
 
 private:
     Ui::MainWindow *ui;

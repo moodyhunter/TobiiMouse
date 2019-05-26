@@ -32,97 +32,124 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <widget class="QWidget" name="horizontalLayoutWidget">
+   <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>991</width>
-      <height>581</height>
+      <x>20</x>
+      <y>30</y>
+      <width>101</width>
+      <height>26</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="masterLayout" stretch="0,0">
-     <property name="spacing">
-      <number>10</number>
-     </property>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout" stretch="1,8,1">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,8">
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Current Device:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>TobiiInteractive::CurrentDeviceUrl</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QListWidget" name="tobiiDevicesList">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="contextMenuPolicy">
-            <enum>Qt::DefaultContextMenu</enum>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton">
-           <property name="text">
-            <string>Use Selected Device</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
+    <property name="text">
+     <string>Current Device:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>30</y>
+      <width>221</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TobiiInteractive::CurrentDeviceUrl</string>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="tobiiDevicesList">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>60</y>
+      <width>331</width>
+      <height>222</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::DefaultContextMenu</enum>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="useSelectedDeviceButton">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>290</y>
+      <width>161</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Use Selected Device</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>900</x>
+      <y>10</y>
+      <width>121</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="gazeFormLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Gaze X</string>
+       </property>
+      </widget>
      </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <layout class="QFormLayout" name="gazeFormLayout">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Gaze X</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLCDNumber" name="gazePositionY"/>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Gaze Y</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLCDNumber" name="gazePositionX"/>
-         </item>
-        </layout>
-       </item>
-      </layout>
+     <item row="0" column="1">
+      <widget class="QLCDNumber" name="gazePositionY"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLCDNumber" name="gazePositionX"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Gaze Y</string>
+       </property>
+      </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>121</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Device List:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="reloadListButton">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>290</y>
+      <width>161</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Reload List</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
