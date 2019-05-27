@@ -2,6 +2,7 @@ branches:
   only:
     - master
     - ci-config
+    - dev
 install:
   - set QTDIR=C:\Qt\5.10\mingw53_32
   - choco install -y InnoSetup
