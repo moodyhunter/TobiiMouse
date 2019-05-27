@@ -63,12 +63,17 @@ void TobiiInteractive::gazeWorker::doWork(void* data){
     auto err = tobii_gaze_point_subscribe( device,
         []( tobii_gaze_point_t const* gaze_point, void* user_data )
         {
-            gazeWorker* parent = reinterpret_cast<gazeWorker*>(user_data);
+            MainWindow* parent = reinterpret_cast<MainWindow*>(user_data);
             if(gaze_point->validity == TOBII_VALIDITY_VALID)
             {
-                emit parent->ResultReady((void *)gaze_point);
+                //emit parent->ResultReady((void *)gaze_point);
+
+                auto x = gaze_point->position_xy[0];
+                auto y = gaze_point->position_xy[1];
+                cout << "x: " << x << " ----- y: " << y << endl;
+                mainwindow->OnGazePositionReceived(to_string(x),to_string(y));
             }
-        }, this );
+        }, mainwindow );
 
     if( err != TOBII_ERROR_NO_ERROR )
     {
@@ -81,6 +86,9 @@ void TobiiInteractive::HandleConnectivityCallback(void* data){
 }
 
 void TobiiInteractive::HandleGazeCallback(void* data){
-    auto xy = reinterpret_cast<tobii_gaze_point_t*>(data);
-    mainwindow->OnGazePositionReceived(xy->position_xy[0],xy->position_xy[1]);
+//    auto xy = (tobii_gaze_point_t*)(data);
+//    auto x = xy->position_xy[0];
+//    auto y = xy->position_xy[1];
+//    cout << "x: " << x << " ----- y: " << y << endl;
+//    mainwindow->OnGazePositionReceived(to_string(x),to_string(y));
 }

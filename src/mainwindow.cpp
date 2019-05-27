@@ -24,9 +24,10 @@ MainWindow::MainWindow(QWidget *parent) :
     //QObject::connect(&tobii, &TobiiInteractive::gazePositionChanged, this, &MainWindow::OnGazePositionReceived);
 }
 
-void MainWindow::OnGazePositionReceived(double x, double y){
-        ui->gazePositionX->display(x);
-        ui->gazePositionY->display(y);
+void MainWindow::OnGazePositionReceived(string x, string y){
+        ui->gazePositionX->display(QString::fromStdString(x));
+        ui->gazePositionY->display(QString::fromStdString(y));
+        cout << "x: " << x << " ----- y: " << y << endl;
 }
 
 void MainWindow::reloadTobiiDeviceList()

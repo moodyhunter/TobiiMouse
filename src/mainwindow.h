@@ -17,7 +17,7 @@ public:
     ~MainWindow();
     void startReadGaze();
     void reloadTobiiDeviceList();
-    void OnGazePositionReceived(double x, double y);
+    void OnGazePositionReceived(string x, string y);
 
 //public slots:
 //    void OnGazePositionReceived( tobii_gaze_point_t const* gaze_point );
