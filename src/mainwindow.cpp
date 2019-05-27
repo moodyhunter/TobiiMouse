@@ -5,36 +5,53 @@
 #include <QMessageBox>
 #include <QThread>
 #include <list>
+#include <iostream>
 
-void MainWindow::reload_tobii_device_list()
-{
-    tobii->reload_devices();
-    auto devices = tobii->devices;
 
-    QStringList* deviceStringList = new QStringList();
-    for (size_t i = 0; i < devices.size(); i++) {
-        deviceStringList->append(QString::fromStdString(devices[i]));
-    }
-    ui->tobiiDevicesList->clear();
-    ui->tobiiDevicesList->addItems(*deviceStringList);
-}
+using namespace std;
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    tobii(new TobiiInteractive())
+    ui(new Ui::MainWindow)
+
 {
     ui->setupUi(this);
-    reload_tobii_device_list();
+    TobiiInteractive::init();
+    reloadTobiiDeviceList();
+    gazeThread = new QThread();
+
+    //QObject::connect(&tobii, &TobiiInteractive::gazePositionChanged, this, &MainWindow::OnGazePositionReceived);
 }
 
+void MainWindow::OnGazePositionReceived(double x, double y){
+        ui->gazePositionX->display(x);
+        ui->gazePositionY->display(y);
+}
+
+void MainWindow::reloadTobiiDeviceList()
+{
+    auto devices = TobiiInteractive::reload_devices();
+    ui->tobiiDevicesList->clear();
+    for (size_t i = 0; i < devices.size(); i++) {
+        ui->tobiiDevicesList->addItem(QString::fromStdString(devices[i]));
+    }
+}
 MainWindow::~MainWindow()
 {
-    delete tobii;
     delete ui;
 }
 
-void MainWindow::StartReadGaze()
+//void MainWindow::gaze_point_callback( tobii_gaze_point_t const* gaze_point, void* user_data )
+//{
+//    assert(user_data == nullptr);
+//    if( gaze_point->validity == TOBII_VALIDITY_VALID )
+//        cout << "Gaze point: " << gaze_point->position_xy[ 0 ] << " - " << gaze_point->position_xy[ 1 ] << endl;
+//}
+
+
+
+void MainWindow::startReadGaze()
 {
     //QThread* thread = QThread::create(QFunctionPointer(process));
     //on_GetAllDevices_clicked();
@@ -42,13 +59,14 @@ void MainWindow::StartReadGaze()
 }
 void MainWindow::on_reloadListButton_clicked()
 {
-    reload_tobii_device_list();
+    reloadTobiiDeviceList();
 }
 
 void MainWindow::on_useSelectedDeviceButton_clicked()
 {
     if(ui->tobiiDevicesList->selectedItems().count() > 0){
         QString currentSelected = ui->tobiiDevicesList->selectedItems().first()->text();
-        tobii->start_subscribe_gaze(currentSelected.toStdString().c_str());
+        ui->currentDeviceLabel->setText(currentSelected);
+        TobiiInteractive::start_subscribe_gaze(currentSelected.toStdString().c_str(), this);
     }
 }

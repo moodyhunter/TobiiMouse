@@ -1,29 +1,33 @@
-#include <stdio.h>
-#include <QString>
-#include <list>
-#include <vector>
-#include <thread>
-#include <iostream>
-#include "assert.h"
-#include "cstring"
+#include "mainwindow.h"
 
-#include "tobii/tobii.h"
-#include "tobii/tobii_streams.h"
-#include "tobii_interactive.h"
+// Create atomic used for inter thread communication
+//static atomic<bool> exit_thread( false );
 
-using namespace std;
+static tobii_error_t lasterr;
+static tobii_device_t* currentDevice;
+static tobii_api_t* api;
 
-TobiiInteractive::TobiiInteractive() noexcept {
+void TobiiInteractive::init() noexcept {
     lasterr = tobii_api_create( &api, nullptr, nullptr );
     assert(lasterr == TOBII_ERROR_NO_ERROR);
-    devices = list_devices();
+    devices = TobiiInteractive::reload_devices();
 }
 
-void TobiiInteractive::reload_devices(){
-    devices = list_devices();
+vector<string> TobiiInteractive::reload_devices(){
+    vector<string> result;
+    auto error = tobii_enumerate_local_device_urls( api,
+        []( char const* url, void* user_data ) // Use a lambda for url receiver function
+        {
+            // Add url string to the supplied result vector
+            auto list = reinterpret_cast<std::vector<std::string>*>(user_data);
+            list->push_back( url );
+        }, &result );
+    if( error != TOBII_ERROR_NO_ERROR ) std::cerr << "Failed to enumerate devices." << std::endl;
+    devices = result;
+    return result;
 }
 
-static tobii_error_t reconnect( tobii_device_t* device )
+tobii_error_t TobiiInteractive::reconnect( tobii_device_t* device )
 {
     // Try reconnecting for 10 seconds before giving up
     for( int i = 0; i < 40; ++i )
@@ -36,119 +40,15 @@ static tobii_error_t reconnect( tobii_device_t* device )
     return TOBII_ERROR_CONNECTION_FAILED;
 }
 
-
-void TobiiInteractive::gaze_point_callback( tobii_gaze_point_t const* gaze_point, void* user_data )
-{
-    assert(user_data == nullptr);
-    if( gaze_point->validity == TOBII_VALIDITY_VALID )
-        cout << "Gaze point: " << gaze_point->position_xy[ 0 ] << " - " << gaze_point->position_xy[ 1 ] << endl;
-//        printf( "Gaze point: %f, %f\n",
-//                static_cast<double>(),
-//                static_cast<double>();
-}
-
-
-vector<string> TobiiInteractive::list_devices()
-{
-    vector<string> result;
-    auto error = tobii_enumerate_local_device_urls( api,
-        []( char const* url, void* user_data ) // Use a lambda for url receiver function
-        {
-            // Add url string to the supplied result vector
-            auto list = reinterpret_cast<std::vector<std::string>*>(user_data);
-            list->push_back( url );
-        }, &result );
-    if( error != TOBII_ERROR_NO_ERROR ) std::cerr << "Failed to enumerate devices." << std::endl;
-
-    return result;
-}
-
-int TobiiInteractive::start_subscribe_gaze(const char* deviceAddressUrl){
+int TobiiInteractive::start_subscribe_gaze(const char* deviceAddressUrl, void* parent){
+    cout << "Now using device: " << deviceAddressUrl << "." << endl;
     lasterr = tobii_device_create(api, deviceAddressUrl, &currentDevice);
-    //"tobii-ttp://IS404-100107046346"
+
     assert( lasterr == TOBII_ERROR_NO_ERROR );
+    cout << "tobii_device_create" << " done with return: " << tobii_error_message(lasterr) << endl;
 
-    // Create atomic used for inter thread communication
-    std::atomic<bool> exit_thread( false );
-    // Start the background processing thread before subscribing to data
-    tobii_device_t* device = currentDevice;
-    std::thread thread(
-        [&exit_thread, device]()
-        {
-            while( !exit_thread )
-            {
-                // Do a timed blocking wait for new gaze data, will time out after some hundred milliseconds
-
-                // I don't know why they have two different functions for Windows and Linux.....
-                // See: tobii.h:131
-#ifdef __WIN32
-                auto error = tobii_wait_for_callbacks( nullptr, 1, &device );
-#else
-                auto error = tobii_wait_for_callbacks( 1, &device );
-#endif
-                if( error == TOBII_ERROR_TIMED_OUT ) continue; // If timed out, redo the wait for callbacks call
-
-                if( error == TOBII_ERROR_CONNECTION_FAILED )
-                {
-                    // Block here while attempting reconnect, if it fails, exit the thread
-                    error = reconnect( device );
-                    if( error != TOBII_ERROR_NO_ERROR )
-                    {
-                        std::cerr << "Connection was lost and reconnection failed." << std::endl;
-                        return;
-                    }
-                    continue;
-                }
-                else if( error != TOBII_ERROR_NO_ERROR )
-                {
-                    std::cerr << "tobii_wait_for_callbacks failed: " << tobii_error_message( error ) << "." << std::endl;
-                    return;
-                }
-                // Calling this function will execute the subscription callback functions
-                error = tobii_device_process_callbacks( device );
-
-                if( error == TOBII_ERROR_CONNECTION_FAILED )
-                {
-                    // Block here while attempting reconnect, if it fails, exit the thread
-                    error = reconnect( device );
-                    if( error != TOBII_ERROR_NO_ERROR )
-                    {
-                        std::cerr << "Connection was lost and reconnection failed." << std::endl;
-                        return;
-                    }
-                    continue;
-                }
-                else if( error != TOBII_ERROR_NO_ERROR )
-                {
-                    std::cerr << "tobii_device_process_callbacks failed: " << tobii_error_message( error ) << "." << std::endl;
-                    return;
-                }
-            }
-    } );
-    // Start subscribing to gaze and supply lambda callback function to handle the gaze point data
-    lasterr = tobii_gaze_point_subscribe( currentDevice,
-        []( tobii_gaze_point_t const* gaze_point, void* user_data )
-        {
-            (void) user_data; // Unused parameter
-            if( gaze_point->validity == TOBII_VALIDITY_VALID )
-                std::cout << "Gaze point: " << gaze_point->timestamp_us << " " << gaze_point->position_xy[ 0 ]
-                    << ", " << gaze_point->position_xy[ 1 ] << std::endl;
-            else
-                std::cout << "Gaze point: " << gaze_point->timestamp_us << " INVALID" << std::endl;
-        }, nullptr );
-
-    if( lasterr != TOBII_ERROR_NO_ERROR )
-    {
-        std::cerr << "Failed to subscribe to gaze stream." << std::endl;
-        exit_thread = true;
-        thread.join();
-        tobii_device_destroy( currentDevice );
-        tobii_api_destroy( api );
-        return 1;
-    }
-    // TODO THIS SHOULD BE REMOVED!!!
-    while(true){
-        std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
-    }
+    // Start the background processing thread before subscribing to data.
+    connectivityController->Operate(currentDevice);
+    gazeController->Operate(parent);
     return 0;
 }

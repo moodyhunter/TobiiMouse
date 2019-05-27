@@ -35,7 +35,7 @@
 build-TobiiMouse*/
 
 # Custom build folder
-src/build
+src/build/
 
 # Qt Creator .user files
 *.user

@@ -15,17 +15,21 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void StartReadGaze();
-    void reload_tobii_device_list();
+    void startReadGaze();
+    void reloadTobiiDeviceList();
+    void OnGazePositionReceived(double x, double y);
+
+//public slots:
+//    void OnGazePositionReceived( tobii_gaze_point_t const* gaze_point );
 
 private slots:
     void on_reloadListButton_clicked();
 
     void on_useSelectedDeviceButton_clicked();
-
 private:
     Ui::MainWindow *ui;
-    TobiiInteractive *tobii;
+    QThread* gazeThread;
 };
+
 
 #endif // MAINWINDOW_H

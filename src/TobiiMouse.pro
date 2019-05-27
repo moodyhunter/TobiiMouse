@@ -27,13 +27,19 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        tobii_interactive.cpp
+        qthread_controller/qthreadcontroller.cpp \
+        qthread_controller/qthreadworker.cpp \
+        tobii_interactive.cpp \
+        tobii_interactive_threadworkers.cpp
 
 HEADERS += \
         mainwindow.h \
+        qthread_controller/qthreadcontroller.h \
+        qthread_controller/qthreadworker.h \
         tobii/tobii.h \
         tobii/tobii_advanced.h \
         tobii/tobii_config.h \
+        tobii/tobii_engine.h \
         tobii/tobii_licensing.h \
         tobii/tobii_streams.h \
         tobii/tobii_wearable.h \
