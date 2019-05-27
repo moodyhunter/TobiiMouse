@@ -66,11 +66,12 @@ void TobiiInteractive::gazeWorker::doWork(void* data){
             MainWindow* parent = reinterpret_cast<MainWindow*>(user_data);
             if(gaze_point->validity == TOBII_VALIDITY_VALID)
             {
+                // Do not use slots ANY MORE!
                 //emit parent->ResultReady((void *)gaze_point);
 
                 auto x = gaze_point->position_xy[0];
                 auto y = gaze_point->position_xy[1];
-                cout << "x: " << x << " ----- y: " << y << endl;
+                //cout << "x: " << x << " ----- y: " << y << endl;
                 mainwindow->OnGazePositionReceived(to_string(x),to_string(y));
             }
         }, mainwindow );

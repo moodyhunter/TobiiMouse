@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include <chrono>
+#include <thread>
 
 // Create atomic used for inter thread communication
 //static atomic<bool> exit_thread( false );
