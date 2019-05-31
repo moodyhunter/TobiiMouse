@@ -9,7 +9,7 @@ class QThreadWorker : public QObject
     Q_OBJECT
 
 public slots:
-    virtual void doWork(void* data);
+    virtual void doWork(void* data1, void* data2);
 
 signals:
     void ResultReady(void* result);

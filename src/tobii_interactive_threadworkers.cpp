@@ -1,14 +1,17 @@
 #include "tobii_interactive.h"
 #include <assert.h>
+#include <tuple>
 #include "mainwindow.h"
+#include "mouse_integration.h"
+
+using namespace TobiiInteractive;
 
 static tobii_device_t* device;
-static MainWindow* mainwindow;
 
-void TobiiInteractive::connectivityWorker::doWork(void* data) {
-    //assert(data == nullptr); // We don't want anything.
-    device = reinterpret_cast<tobii_device_t*>(data);
-    while( true /*!exit_thread */)
+void TobiiInteractive::connectivityWorker::doWork(void* data1, void* data2) {
+    device = reinterpret_cast<tobii_device_t*>(data1);
+    auto enabled = reinterpret_cast<bool*>(data2);
+    while(*enabled)
     {
         // Do a timed blocking wait for new gaze data, will time out after some hundred milliseconds
 
@@ -19,10 +22,10 @@ void TobiiInteractive::connectivityWorker::doWork(void* data) {
 #else
         auto error = tobii_wait_for_callbacks( 1, &device ); //Linux API Provides no such tobii_engine implementation. AFAIK.
 #endif
-        if( error == TOBII_ERROR_TIMED_OUT ) continue; // If timed out, redo the wait for callbacks call
+        if( error == TOBII_ERROR_TIMED_OUT ) continue;
         if( error == TOBII_ERROR_CONNECTION_FAILED )
         {
-                // Block here while attempting reconnect, if it fails, exit the thread
+            // Block here while attempting reconnect, if it fails, exit the thread
             error = reconnect( device );
             if( error != TOBII_ERROR_NO_ERROR )
             {
@@ -57,24 +60,31 @@ void TobiiInteractive::connectivityWorker::doWork(void* data) {
     }
 }
 
-void TobiiInteractive::gazeWorker::doWork(void* data){
-    mainwindow = reinterpret_cast<MainWindow*>(data);
-    // Start subscribing to gaze and supply lambda callback function to handle the gaze point data
-    auto err = tobii_gaze_point_subscribe( device,
-        []( tobii_gaze_point_t const* gaze_point, void* user_data )
-        {
-            MainWindow* parent = reinterpret_cast<MainWindow*>(user_data);
-            if(gaze_point->validity == TOBII_VALIDITY_VALID)
-            {
-                // Do not use slots ANY MORE!
-                //emit parent->ResultReady((void *)gaze_point);
+void TobiiInteractive::gazeWorker::doWork(void* data1, void* data2){
 
-                auto x = gaze_point->position_xy[0];
-                auto y = gaze_point->position_xy[1];
-                //cout << "x: " << x << " ----- y: " << y << endl;
-                mainwindow->OnGazePositionReceived(to_string(x),to_string(y));
+    //ParentWindow, &GazeEnabled, This (used in slot emitter)
+    tuple<MainWindow*, bool*, QThreadWorker*> pointers (reinterpret_cast<MainWindow*>(data1), reinterpret_cast<bool*>(data2), this);
+
+    auto err = tobii_gaze_point_subscribe( device,
+        []( tobii_gaze_point_t const* gaze_point, void* user_data ) // user_data is tuple<MainWindow*, bool*, QThreadWorker*>
+        {
+            auto data_collection = *reinterpret_cast<tuple<MainWindow*, bool*, QThreadWorker*>*>(user_data);
+            auto mwindow = get<0>(data_collection);
+            auto enabled = get<1>(data_collection);
+
+            if(*enabled && gaze_point->validity == TOBII_VALIDITY_VALID)
+            {
+#ifdef __linux__
+                auto _this = get<2>(data_collection);
+                tuple<MainWindow*, float, float> results(mwindow, gaze_point->position_xy[0], gaze_point->position_xy[1]);
+                emit _this->ResultReady(&results);
+#elif _WIN32
+                // Workaround of some strange pointer bug...
+                mwindow->OnGazePositionUIUpdate(gaze_point->position_xy[0], gaze_point->position_xy[1]);
+                MouseIntegration::OnGaze(gaze_point->position_xy[0], gaze_point->position_xy[1]);
+#endif
             }
-        }, mainwindow );
+        }, &pointers);
 
     if( err != TOBII_ERROR_NO_ERROR )
     {
@@ -83,13 +93,14 @@ void TobiiInteractive::gazeWorker::doWork(void* data){
 }
 
 void TobiiInteractive::HandleConnectivityCallback(void* data){
-
+    assert(data == nullptr);
 }
 
 void TobiiInteractive::HandleGazeCallback(void* data){
-//    auto xy = (tobii_gaze_point_t*)(data);
-//    auto x = xy->position_xy[0];
-//    auto y = xy->position_xy[1];
-//    cout << "x: " << x << " ----- y: " << y << endl;
-//    mainwindow->OnGazePositionReceived(to_string(x),to_string(y));
+    auto data_collection = reinterpret_cast<tuple<MainWindow*, float, float>*>(data);
+    auto mwindow = get<0>(*data_collection);
+    auto x = get<1>(*data_collection);
+    auto y = get<2>(*data_collection);
+    mwindow->OnGazePositionUIUpdate(x, y);
+    MouseIntegration::OnGaze(x, y);
 }

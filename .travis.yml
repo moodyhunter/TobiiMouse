@@ -4,17 +4,19 @@ compiler: g++
 sudo: required
 
 before_install:
-  - sudo add-apt-repository ppa:beineri/opt-qt58-trusty -y
   - sudo apt-get update
 
 install:
-  - sudo apt-get install qt58base qt58svg qt58charts-no-lgpl qt58xmlpatterns
-  - source /opt/qt58/bin/qt58-env.sh
+  - sudo apt-get install qtchooser qt5-default
+  - sudo apt-get install qt5-qmake 
+  - sudo apt-get install qtdeclarative5-dev
+  - sudo apt-get install libx11-dev libxrandr-dev
+#  - source /opt/qt58/bin/qt58-env.sh
 
 
 script:
   - cd ./src/
   - mkdir build
   - cd ./build
-  - /opt/qt58/bin/qmake ../
+  - QT_SELECT=5 QTDIR=/usr/share/qt5 qmake ../
   - make

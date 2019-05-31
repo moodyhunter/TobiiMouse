@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QMAKE_CXXFLAGS += -std=c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -22,11 +23,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x040000    # disables all the APIs deprecated before Qt 6.0.0
 
-CONFIG += c++11
-
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
+        mouse_integration.cpp \
+        noise_cancellation.cpp \
         qthread_controller/qthreadcontroller.cpp \
         qthread_controller/qthreadworker.cpp \
         tobii_interactive.cpp \
@@ -34,6 +35,8 @@ SOURCES += \
 
 HEADERS += \
         mainwindow.h \
+        mouse_integration.h \
+        noise_cancellation.h \
         qthread_controller/qthreadcontroller.h \
         qthread_controller/qthreadworker.h \
         tobii/tobii.h \
@@ -43,7 +46,8 @@ HEADERS += \
         tobii/tobii_licensing.h \
         tobii/tobii_streams.h \
         tobii/tobii_wearable.h \
-        tobii_interactive.h
+        tobii_interactive.h \
+        tobiimouse.h
 
 FORMS += \
         mainwindow.ui
@@ -73,3 +77,8 @@ LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine
 INCLUDEPATH += $$PWD/lib/x64
 DEPENDPATH += $$PWD/lib/x64
 
+
+unix:!macx: LIBS += -lX11
+
+
+unix:!macx: LIBS += -lXrandr
