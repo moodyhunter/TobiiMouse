@@ -16,7 +16,6 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void startReadGaze();
     void reloadTobiiDeviceList();
     void OnGazePositionUIUpdate(float x, float y);
 

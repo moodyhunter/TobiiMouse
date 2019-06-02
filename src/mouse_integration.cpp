@@ -1,4 +1,5 @@
 #include "mouse_integration.h"
+#include <iostream>
 #include <vector>
 
 namespace MouseIntegration
@@ -15,12 +16,16 @@ static Display* _display;
 static Window _root_window;
 #elif _WIN32
 static vector<RECT> Monitors;
-#else
-#error "Unknown Operating System..."
 #endif
 }
 
 #ifdef _WIN32
+namespace MouseIntegration {
+static int InitialSpeed = 1; // pixels
+static double SquareFactor = 15; // factor of square when gaze is near the margin.
+static double HorizontalThrehold = 0.13;
+static double VerticalThrehold = 0.13;
+}
 WINBOOL CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC hdc,LPRECT lPRect, LPARAM _param){
     UNUSED(hmonitor);
     UNUSED(hdc);
@@ -29,6 +34,37 @@ WINBOOL CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC 
     ScreenWidth = lPRect->right - lPRect->left;
     ScreenHeight = lPRect->bottom - lPRect->top;
     return FALSE; // We currently only support the first one...
+}
+void MouseIntegration::MoveMouseByScreenSection(int x, int y)
+{
+    auto screenCenterX = static_cast<int>(ScreenWidth / 2);
+    auto screenCenterY = static_cast<int>(ScreenHeight / 2);
+
+    auto horizontalNoDetectRange = ((ScreenWidth - screenCenterX) * HorizontalThrehold);
+    auto verticalNoDetectRange = ((ScreenHeight - screenCenterY) * VerticalThrehold);
+
+    auto noDetectRect_Left = screenCenterX - horizontalNoDetectRange;
+    auto noDetectRect_Top = screenCenterY - verticalNoDetectRange;
+    auto noDetectRect_Right = screenCenterX + horizontalNoDetectRange;
+    auto noDetectRect_Bottom = screenCenterY + verticalNoDetectRange;
+
+    if((noDetectRect_Left < x && x < noDetectRect_Right) && (noDetectRect_Top < y && y < noDetectRect_Bottom)) return;
+
+    bool isGazeOnLeft = x < screenCenterX;
+    bool isGazeOnTop = y < screenCenterY;
+
+    auto gazeRatioHorizontal = isGazeOnLeft
+                ? fabs(noDetectRect_Left - x) / screenCenterX
+                : fabs(x - noDetectRect_Right) / (screenCenterX);
+
+    auto gazeRatioVerticle = isGazeOnTop
+                ? fabs(noDetectRect_Top - y) / screenCenterY
+                : fabs(y - noDetectRect_Bottom) / (screenCenterY);
+
+    auto HSpeed = static_cast<unsigned long>(InitialSpeed + pow(gazeRatioHorizontal, 2) * SquareFactor);
+    auto VSpeed = static_cast<unsigned long>(InitialSpeed + pow(gazeRatioVerticle, 2) * SquareFactor);
+    mouse_event(MOUSEEVENTF_MOVE, isGazeOnLeft ? -HSpeed : HSpeed, isGazeOnTop ? -VSpeed : VSpeed, 0, NULL);
+
 }
 #endif
 void MouseIntegration::init()
@@ -58,13 +94,13 @@ void MouseIntegration::MoveMouseTo(int x, int y)
     XFlush(_display);
 #elif _WIN32
     SetCursorPos(x, y);
-    // windows code goes here
 #endif
 }
 
 void MouseIntegration::MoveMouseOffset(int x, int y)
 {
 #ifdef __linux__
+    cout << "Not Implemented yet" << endl;
 #elif _WIN32
     bool UseNewMouseMoveFunction = false;
     if(UseNewMouseMoveFunction)
@@ -121,7 +157,10 @@ void MouseIntegration::OnGaze(float x, float y)
     case TOBII_MOUSE_MODE_MOVE_BY_POSITION:
         MoveMouseOffset(posiX, posiY);
         break;
+#ifdef _WIN32
     case TOBII_MOUSE_MODE_MOVE_BY_SECTIONS:
+        MoveMouseByScreenSection(posiX, posiY);
+#endif
         break;
     }
     LastX = posiX;

@@ -46,21 +46,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-//void MainWindow::gaze_point_callback( tobii_gaze_point_t const* gaze_point, void* user_data )
-//{
-//    assert(user_data == nullptr);
-//    if( gaze_point->validity == TOBII_VALIDITY_VALID )
-//        cout << "Gaze point: " << gaze_point->position_xy[ 0 ] << " - " << gaze_point->position_xy[ 1 ] << endl;
-//}
-
-
-
-void MainWindow::startReadGaze()
-{
-    //QThread* thread = QThread::create(QFunctionPointer(process));
-    //on_GetAllDevices_clicked();
-    //thread->start();
-}
 void MainWindow::on_reloadListButton_clicked()
 {
     reloadTobiiDeviceList();
@@ -91,6 +76,10 @@ void MainWindow::on_absoluteButton_clicked(bool checked)
 void MainWindow::on_relativeButton_clicked(bool checked)
 {
     if(checked){
+#ifdef _WIN32
+        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_SECTIONS);
+#else
         MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_POSITION);
+#endif
     }
 }

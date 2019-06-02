@@ -18,36 +18,24 @@ static constexpr const float FSlowSpeed = 0.04f;    // now fast to move when clo
 static constexpr const float FIntegrationDeadZone = 1.0; //pixels
 static constexpr const float integratingSpeed = 0.2f;
 
-static float lastRawX;
-static float lastRawY;
+static float lastRawX = 0;
+static float lastRawY = 0;
 
-static float filteredX;
-static float filteredY;
+static float filteredX = 0;
+static float filteredY = 0;
 
-static float integratedErrorX;
-static float integratedErrorY;
+static float integratedErrorX = 0;
+static float integratedErrorY = 0;
 
-static float filteredErrorX; // this will be the distance between the gaze data and the current mouse position
-static float filteredErrorY; // this will be the distance between the gaze data and the current mouse position
+//static float filteredErrorX = 0; // this will be the distance between the gaze data and the current mouse position
+//static float filteredErrorY = 0; // this will be the distance between the gaze data and the current mouse position
 }
 
-void NoiseCancellation::init(){
-    lastRawX = 0;
-    lastRawY = 0;
-
-    filteredX = 0;
-    filteredY = 0;
-
-    integratedErrorX = 0;
-    integratedErrorY = 0;
-
-    filteredErrorX = 0; // this will be the distance between the gaze data and the current mouse position
-    filteredErrorY = 0; // this will be the distance between the gaze data and the current mouse position
-}
+void NoiseCancellation::init(){}
 
 tuple<float, float> NoiseCancellation::CancelNoise(float x, float y)
 {
-    if (pow(fabs(lastRawX - x), 2) + pow(fabs(lastRawY - y), 2) > 320)
+    if (pow(fabs(lastRawX - x), 2) + pow(fabs(lastRawY - y), 2) > 320) // For some huge errors, such as the blinking eyes.
     {
         lastRawX = x;
         lastRawY = y;
