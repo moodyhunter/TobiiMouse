@@ -57,28 +57,19 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-unix:!macx: LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine
+
+# X11 Support
+unix:!macx: LIBS += -lX11 -lXrandr
+
+
+# Tobii LIBs
 
 INCLUDEPATH += $$PWD/lib/x64
 DEPENDPATH += $$PWD/lib/x64
-
-unix:!macx: LIBS += -L$$PWD/lib/x86/ -ltobii_stream_engine
 
 INCLUDEPATH += $$PWD/lib/x86
 DEPENDPATH += $$PWD/lib/x86
 
 LIBS += -L$$PWD/lib/x86/ -ltobii_stream_engine
-
-INCLUDEPATH += $$PWD/lib/x86
-DEPENDPATH += $$PWD/lib/x86
-
 LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine
 
-INCLUDEPATH += $$PWD/lib/x64
-DEPENDPATH += $$PWD/lib/x64
-
-
-unix:!macx: LIBS += -lX11
-
-
-unix:!macx: LIBS += -lXrandr
