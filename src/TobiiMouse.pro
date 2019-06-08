@@ -59,7 +59,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 
 # X11 Support
-unix:!macx: LIBS += -lX11 -lXrandr
+unix:!macx: LIBS += -lX11 -lXrandr -lXtst
 
 
 # Tobii LIBs

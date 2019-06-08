@@ -68,18 +68,15 @@ void MainWindow::on_actionQuit_triggered()
 
 void MainWindow::on_absoluteButton_clicked(bool checked)
 {
-    if(checked){
-        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_ABSOLUTE);
-    }
+    if(checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_ABSOLUTE);
 }
 
 void MainWindow::on_relativeButton_clicked(bool checked)
 {
-    if(checked){
-#ifdef _WIN32
-        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_SECTIONS);
-#else
-        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_POSITION);
-#endif
-    }
+    if(checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_RELATIVE);
+}
+
+void MainWindow::on_radioButton_clicked(bool checked)
+{
+    if(checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_SECTIONS);
 }

@@ -11,6 +11,12 @@ static int ScreenWidth;
 static int LastX;
 static int LastY;
 
+// For Move by screen sectors.
+static int InitialSpeed = 0; // pixels
+static double ScaleFactor = 16; // factor of square when gaze is near the margin.
+static double HorizontalThrehold = 0.15;
+static double VerticalThrehold = 0.15;
+
 #ifdef __linux__
 static Display* _display;
 static Window _root_window;
@@ -20,12 +26,6 @@ static vector<RECT> Monitors;
 }
 
 #ifdef _WIN32
-namespace MouseIntegration {
-static int InitialSpeed = 1; // pixels
-static double SquareFactor = 15; // factor of square when gaze is near the margin.
-static double HorizontalThrehold = 0.13;
-static double VerticalThrehold = 0.13;
-}
 WINBOOL CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC hdc,LPRECT lPRect, LPARAM _param){
     UNUSED(hmonitor);
     UNUSED(hdc);
@@ -35,6 +35,8 @@ WINBOOL CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC 
     ScreenHeight = lPRect->bottom - lPRect->top;
     return FALSE; // We currently only support the first one...
 }
+#endif
+
 void MouseIntegration::MoveMouseByScreenSection(int x, int y)
 {
     auto screenCenterX = static_cast<int>(ScreenWidth / 2);
@@ -61,12 +63,17 @@ void MouseIntegration::MoveMouseByScreenSection(int x, int y)
                 ? fabs(noDetectRect_Top - y) / screenCenterY
                 : fabs(y - noDetectRect_Bottom) / (screenCenterY);
 
-    auto HSpeed = static_cast<unsigned long>(InitialSpeed + pow(gazeRatioHorizontal, 2) * SquareFactor);
-    auto VSpeed = static_cast<unsigned long>(InitialSpeed + pow(gazeRatioVerticle, 2) * SquareFactor);
-    mouse_event(MOUSEEVENTF_MOVE, isGazeOnLeft ? -HSpeed : HSpeed, isGazeOnTop ? -VSpeed : VSpeed, 0, NULL);
-
-}
+    auto HSpeed = int(InitialSpeed + pow(gazeRatioHorizontal, 2) * ScaleFactor);
+    auto VSpeed = int(InitialSpeed + pow(gazeRatioVerticle, 2) * ScaleFactor);
+#ifdef _WIN32
+    auto HSpeedl = static_cast<unsigned long>(HSpeed);
+    auto VSpeedl = static_cast<unsigned long>(VSpeed);
+    mouse_event(MOUSEEVENTF_MOVE, isGazeOnLeft ? -HSpeedl : HSpeedl, isGazeOnTop ? -VSpeedl : VSpeedl, 0, NULL);
+#else
+    XTestFakeRelativeMotionEvent(_display, isGazeOnLeft ? -HSpeed : HSpeed, isGazeOnTop ? -VSpeed : VSpeed, 0);
+    XFlush(_display);
 #endif
+}
 void MouseIntegration::init()
 {
     NoiseCancellation::init();
@@ -76,8 +83,8 @@ void MouseIntegration::init()
     _root_window = XRootWindow(_display, 0);
     XRRScreenResources *screens = XRRGetScreenResources(_display, DefaultRootWindow(_display));
     XRRCrtcInfo *info = XRRGetCrtcInfo(_display, screens, screens->crtcs[0]);
-    ScreenWidth = info->width;
-    ScreenHeight = info->height;
+    ScreenWidth = static_cast<int>(info->width);
+    ScreenHeight = static_cast<int>(info->height);
     XRRFreeCrtcInfo(info);
     XRRFreeScreenResources(screens);
 #elif _WIN32
@@ -89,8 +96,7 @@ void MouseIntegration::init()
 void MouseIntegration::MoveMouseTo(int x, int y)
 {
 #ifdef __linux__
-    XSelectInput(_display, _root_window, KeyReleaseMask);
-    XWarpPointer(_display, None, _root_window, 0, 0, 0, 0, x, y);
+    XTestFakeMotionEvent(_display, 0, x, y, 0);
     XFlush(_display);
 #elif _WIN32
     SetCursorPos(x, y);
@@ -100,7 +106,8 @@ void MouseIntegration::MoveMouseTo(int x, int y)
 void MouseIntegration::MoveMouseOffset(int x, int y)
 {
 #ifdef __linux__
-    cout << "Not Implemented yet" << endl;
+    XTestFakeRelativeMotionEvent(_display, x - LastX, y - LastY, 0);
+    XFlush(_display);
 #elif _WIN32
     bool UseNewMouseMoveFunction = false;
     if(UseNewMouseMoveFunction)
@@ -151,16 +158,14 @@ void MouseIntegration::OnGaze(float x, float y)
     auto posiY = get<1>(data);
 
     switch (WorkingMode) {
-    case TOBII_MOUSE_MODE_ABSOLUTE:
+    case TOBII_MOUSE_MODE_MOVE_ABSOLUTE:
         MoveMouseTo(posiX, posiY);
         break;
-    case TOBII_MOUSE_MODE_MOVE_BY_POSITION:
+    case TOBII_MOUSE_MODE_MOVE_RELATIVE:
         MoveMouseOffset(posiX, posiY);
         break;
-#ifdef _WIN32
     case TOBII_MOUSE_MODE_MOVE_BY_SECTIONS:
         MoveMouseByScreenSection(posiX, posiY);
-#endif
         break;
     }
     LastX = posiX;
