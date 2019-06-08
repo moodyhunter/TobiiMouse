@@ -10,9 +10,7 @@ install:
   - sudo apt-get install qtchooser qt5-default
   - sudo apt-get install qt5-qmake 
   - sudo apt-get install qtdeclarative5-dev
-  - sudo apt-get install libx11-dev libxrandr-dev
-#  - source /opt/qt58/bin/qt58-env.sh
-
+  - sudo apt-get install libx11-dev libxrandr-dev libxtst-dev
 
 script:
   - cd ./src/
