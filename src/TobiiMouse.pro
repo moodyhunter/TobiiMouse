@@ -18,11 +18,6 @@ TEMPLATE = app
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
-# You can also make your code fail to compile if you use deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x040000    # disables all the APIs deprecated before Qt 6.0.0
-
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
@@ -60,10 +55,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 unix:!macx: LIBS += -lX11 -lXrandr -lXtst
 
 # Tobii LIBs
-INCLUDEPATH += $$PWD/lib/x64
-DEPENDPATH += $$PWD/lib/x64
-LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine
-
 INCLUDEPATH += $$PWD/lib/x86
 DEPENDPATH += $$PWD/lib/x86
 LIBS += -L$$PWD/lib/x86/ -ltobii_stream_engine
+
+INCLUDEPATH += $$PWD/lib/x64
+DEPENDPATH += $$PWD/lib/x64
+LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine

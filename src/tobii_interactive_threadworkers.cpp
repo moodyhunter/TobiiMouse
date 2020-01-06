@@ -20,7 +20,7 @@ void TobiiInteractive::GazePointWorker::doWork(void *data1)
 #ifdef __WIN32
         auto error = tobii_wait_for_callbacks(nullptr, 1, &thisDevice);   //The nullptr is for &tobii_engine
 #else
-        auto error = tobii_wait_for_callbacks(1, &device);   //Linux API Provides no such tobii_engine implementation. AFAIK.
+        auto error = tobii_wait_for_callbacks(1, &thisDevice);   //Linux API Provides no such tobii_engine implementation. AFAIK.
 #endif
 
         if (error == TOBII_ERROR_TIMED_OUT) continue;
