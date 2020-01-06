@@ -4,9 +4,10 @@
 #include "tobiimouse.h"
 #include <cmath>
 using namespace std;
-namespace NoiseCancellation {
+namespace NoiseCancellation
+{
     void init();
-    tuple<float,float> CancelNoise(float x, float y);
+    tuple<float, float> CancelNoise(float x, float y);
 };
 
 #endif // NOISE_CANCELLATION_H

@@ -3,16 +3,17 @@
 #include <QObject>
 #include <QThread>
 
-namespace QThreadController{
-class QThreadWorker : public QObject
+namespace QThreadController
 {
-    Q_OBJECT
+    class QThreadWorker : public QObject
+    {
+            Q_OBJECT
 
-public slots:
-    virtual void doWork(void* data1, void* data2);
+        public slots:
+            virtual void doWork(void *data1, void *data2);
 
-signals:
-    void ResultReady(void* result);
-};
+        signals:
+            void ResultReady(void *result);
+    };
 }
 #endif // QTHREADWORKER_H

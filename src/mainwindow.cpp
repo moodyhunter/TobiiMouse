@@ -11,6 +11,7 @@
 
 using namespace std;
 
+MainWindow *MainWindow::instance = nullptr;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -18,25 +19,24 @@ MainWindow::MainWindow(QWidget *parent) :
 
 {
     ui->setupUi(this);
-    TobiiInteractive::init(this);
+    TobiiInteractive::init();
     reloadTobiiDeviceList();
-    gazeThread = new QThread();
+    MainWindow::instance = this;
 }
 
-void MainWindow::OnGazePositionUIUpdate(float x, float y){
-    ui->gazePositionX->display(QString::fromStdString(to_string(x)));
-    ui->gazePositionY->display(QString::fromStdString(to_string(y)));
+void MainWindow::OnGazePositionUIUpdate(float x, float y)
+{
+    ui->gazePositionX->display(QString::number(x));
+    ui->gazePositionY->display(QString::number(y));
 }
 
 void MainWindow::reloadTobiiDeviceList()
 {
     auto devices = TobiiInteractive::reload_devices();
     ui->tobiiDevicesList->clear();
-    for (size_t i = 0; i < devices.size(); i++) {
-        ui->tobiiDevicesList->addItem(QString::fromStdString(devices[i]));
-    }
-    if(ui->tobiiDevicesList->count() > 0)
-    {
+    ui->tobiiDevicesList->addItems(devices);
+
+    if (ui->tobiiDevicesList->count() > 0) {
         ui->tobiiDevicesList->setCurrentItem(ui->tobiiDevicesList->item(0));
     }
 }
@@ -53,10 +53,10 @@ void MainWindow::on_reloadListButton_clicked()
 
 void MainWindow::on_useSelectedDeviceButton_clicked()
 {
-    if(ui->tobiiDevicesList->selectedItems().count() > 0){
+    if (!ui->tobiiDevicesList->selectedItems().isEmpty()) {
         QString currentSelected = ui->tobiiDevicesList->selectedItems().first()->text();
         ui->currentDeviceLabel->setText(currentSelected);
-        TobiiInteractive::start_subscribe_gaze(currentSelected.toStdString().c_str());
+        TobiiInteractive::start_subscribe_gaze(currentSelected);
     }
 }
 
@@ -68,15 +68,15 @@ void MainWindow::on_actionQuit_triggered()
 
 void MainWindow::on_absoluteButton_clicked(bool checked)
 {
-    if(checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_ABSOLUTE);
+    if (checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_ABSOLUTE);
 }
 
 void MainWindow::on_relativeButton_clicked(bool checked)
 {
-    if(checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_RELATIVE);
+    if (checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_RELATIVE);
 }
 
 void MainWindow::on_radioButton_clicked(bool checked)
 {
-    if(checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_SECTIONS);
+    if (checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_SECTIONS);
 }

@@ -7,36 +7,36 @@
 
 #include "noise_cancellation.h"
 
-namespace NoiseCancellation {
-static tuple<float, float> lastdata;
+namespace NoiseCancellation
+{
+    static tuple<float, float> lastdata;
 
-static constexpr const float FDeadZone = 8.0;       // pixels
-static constexpr const float g_SlowZone = 40;       // pixels
-static constexpr const float FSpeed = 0.5f;         // how fast to move when far away
-static constexpr const float FSlowSpeed = 0.04f;    // now fast to move when close
+    static constexpr const float FDeadZone = 8.0;       // pixels
+    static constexpr const float g_SlowZone = 40;       // pixels
+    static constexpr const float FSpeed = 0.5f;         // how fast to move when far away
+    static constexpr const float FSlowSpeed = 0.04f;    // now fast to move when close
 
-static constexpr const float FIntegrationDeadZone = 1.0; //pixels
-static constexpr const float integratingSpeed = 0.2f;
+    static constexpr const float FIntegrationDeadZone = 1.0; //pixels
+    static constexpr const float integratingSpeed = 0.2f;
 
-static float lastRawX = 0;
-static float lastRawY = 0;
+    static float lastRawX = 0;
+    static float lastRawY = 0;
 
-static float filteredX = 0;
-static float filteredY = 0;
+    static float filteredX = 0;
+    static float filteredY = 0;
 
-static float integratedErrorX = 0;
-static float integratedErrorY = 0;
+    static float integratedErrorX = 0;
+    static float integratedErrorY = 0;
 
-//static float filteredErrorX = 0; // this will be the distance between the gaze data and the current mouse position
-//static float filteredErrorY = 0; // this will be the distance between the gaze data and the current mouse position
+    //static float filteredErrorX = 0; // this will be the distance between the gaze data and the current mouse position
+    //static float filteredErrorY = 0; // this will be the distance between the gaze data and the current mouse position
 }
 
-void NoiseCancellation::init(){}
+void NoiseCancellation::init() {}
 
 tuple<float, float> NoiseCancellation::CancelNoise(float x, float y)
 {
-    if (pow(fabs(lastRawX - x), 2) + pow(fabs(lastRawY - y), 2) > 320) // For some huge errors, such as the blinking eyes.
-    {
+    if (pow(fabs(lastRawX - x), 2) + pow(fabs(lastRawY - y), 2) > 320) { // For some huge errors, such as the blinking eyes.
         lastRawX = x;
         lastRawY = y;
         return lastdata; //reject noise
@@ -44,18 +44,29 @@ tuple<float, float> NoiseCancellation::CancelNoise(float x, float y)
 
     float errorX = x - filteredX;
     float errorY = y - filteredY;
-
     integratedErrorX += errorX;
     integratedErrorY += errorY;
-
     float speed = FSlowSpeed;
+
     if (fabs(errorX + errorY) > g_SlowZone) speed = FSpeed;
 
-    if (fabs(errorX) > FDeadZone){ filteredX += speed * errorX; }
-    if (fabs(errorY) > FDeadZone){ filteredY += speed * errorY; }
+    if (fabs(errorX) > FDeadZone) {
+        filteredX += speed * errorX;
+    }
 
-    if (abs(integratedErrorX) > FIntegrationDeadZone){ filteredX += integratingSpeed * integratedErrorX; integratedErrorX = 0; }
-    if (abs(integratedErrorY) > FIntegrationDeadZone){ filteredY += integratingSpeed * integratedErrorY; integratedErrorY = 0; }
+    if (fabs(errorY) > FDeadZone) {
+        filteredY += speed * errorY;
+    }
+
+    if (abs(integratedErrorX) > FIntegrationDeadZone) {
+        filteredX += integratingSpeed * integratedErrorX;
+        integratedErrorX = 0;
+    }
+
+    if (abs(integratedErrorY) > FIntegrationDeadZone) {
+        filteredY += integratingSpeed * integratedErrorY;
+        integratedErrorY = 0;
+    }
 
     tuple<float, float> filteredData(filteredX, filteredY);
     lastdata = filteredData;
