@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
-QMAKE_CXXFLAGS += -std=c++11
+CONFIG += c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -46,8 +46,7 @@ HEADERS += \
         tobii/tobii_licensing.h \
         tobii/tobii_streams.h \
         tobii/tobii_wearable.h \
-        tobii_interactive.h \
-        tobiimouse.h
+        tobii_interactive.h
 
 FORMS += \
         mainwindow.ui
@@ -57,19 +56,14 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-
 # X11 Support
 unix:!macx: LIBS += -lX11 -lXrandr -lXtst
 
-
 # Tobii LIBs
-
 INCLUDEPATH += $$PWD/lib/x64
 DEPENDPATH += $$PWD/lib/x64
+LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine
 
 INCLUDEPATH += $$PWD/lib/x86
 DEPENDPATH += $$PWD/lib/x86
-
 LIBS += -L$$PWD/lib/x86/ -ltobii_stream_engine
-LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine
-

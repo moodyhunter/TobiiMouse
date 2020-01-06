@@ -3,35 +3,31 @@
 #include <thread>
 #include "mouse_integration.h"
 
-// Create atomic used for inter thread communication
-//static atomic<bool> exit_thread( false );
 
 namespace TobiiInteractive
 {
+    bool isRunning = false;
     static tobii_error_t lasterr;
     static tobii_api_t *api;
     static tobii_device_t *CurrentDevice;
 
-    static bool GazeEnabled;
     static QStringList devices;
-    static ThreadController *connectivityController;
     static ThreadController *gazeController;
 }
 
-
-void TobiiInteractive::init() noexcept
+void TobiiInteractive::Initialise() noexcept
 {
+    isRunning = false;
     lasterr = tobii_api_create(&api, nullptr, nullptr);
     assert(lasterr == TOBII_ERROR_NO_ERROR);
-    devices = TobiiInteractive::reload_devices();
+    devices = TobiiInteractive::ReloadDevices();
     //
-    connectivityController = new ThreadController(new connectivityWorker(), &HandleConnectivityCallback);
-    gazeController = new ThreadController(new gazeWorker(), &HandleGazeCallback);
+    gazeController = new ThreadController(new GazePointWorker(), &HandleGazeCallback);
     //
     MouseIntegration::init();
 }
 
-QStringList TobiiInteractive::reload_devices()
+QStringList TobiiInteractive::ReloadDevices()
 {
     QStringList result;
     auto error = tobii_enumerate_local_device_urls(api,
@@ -45,8 +41,10 @@ QStringList TobiiInteractive::reload_devices()
     return result;
 }
 
-tobii_error_t TobiiInteractive::reconnect(tobii_device_t *device)
+tobii_error_t TobiiInteractive::ReconnectTobii(tobii_device_t *device)
 {
+    cout << "Reconnecting..." << endl;
+
     // Try reconnecting for 10 seconds before giving up
     for (int i = 0; i < 40; ++i) {
         auto error = tobii_device_reconnect(device);
@@ -59,24 +57,26 @@ tobii_error_t TobiiInteractive::reconnect(tobii_device_t *device)
     return TOBII_ERROR_CONNECTION_FAILED;
 }
 
-int TobiiInteractive::start_subscribe_gaze(QString deviceUrl)
+int TobiiInteractive::StartSubscribeGaze(QString deviceUrl)
 {
-    GazeEnabled = true;
+    if (isRunning) {
+        StopSubscribeGaze();
+    }
+
+    isRunning = true;
     cout << "Device: " << deviceUrl.toStdString() << "." << endl;
     lasterr = tobii_device_create(api, deviceUrl.toStdString().c_str(), &CurrentDevice);
     assert(lasterr == TOBII_ERROR_NO_ERROR);
     cout << "tobii_device_create returns: " << tobii_error_message(lasterr) << endl;
     //
     // Start the background processing thread before subscribing to data.
-    connectivityController->StartOperate(CurrentDevice, &GazeEnabled);
-    gazeController->StartOperate(&GazeEnabled, nullptr);
+    gazeController->StartOperate(CurrentDevice);
     return 0;
 }
 
-int TobiiInteractive::stop_subscribe_gaze()
+int TobiiInteractive::StopSubscribeGaze()
 {
-    GazeEnabled = false;
-    connectivityController->StopOperate();
+    isRunning = false;
     gazeController->StopOperate();
     return 0;
 }

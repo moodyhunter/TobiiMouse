@@ -18,9 +18,9 @@ QThreadController::ThreadController::~ThreadController()
     workerThread.wait();
 }
 
-void QThreadController::ThreadController::StartOperate(void *data1, void *data2)
+void QThreadController::ThreadController::StartOperate(void *data1)
 {
-    emit Operate(data1, data2);
+    emit Operate(data1);
 }
 
 void QThreadController::ThreadController::HandleResults(void *data)

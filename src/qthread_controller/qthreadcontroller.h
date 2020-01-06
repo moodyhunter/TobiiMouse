@@ -17,12 +17,12 @@ namespace QThreadController
         public:
             ThreadController(QThreadWorker *instance, HandleResultsCallback_t *callback);
             ~ThreadController();
-            void StartOperate(void *data1, void *data2);
+            void StartOperate(void *data1);
             void StopOperate();
         public slots:
             void HandleResults(void *result);
         signals:
-            void Operate(void *data1, void *data2);
+            void Operate(void *data1);
         private:
             QThreadWorker *worker;
     };

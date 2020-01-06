@@ -10,7 +10,7 @@ namespace QThreadController
             Q_OBJECT
 
         public slots:
-            virtual void doWork(void *data1, void *data2);
+            virtual void doWork(void *data1);
 
         signals:
             void ResultReady(void *result);

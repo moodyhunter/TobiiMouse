@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "tobiimouse.h"
 #include <QMainWindow>
 #include "tobii_interactive.h"
 
@@ -31,6 +30,14 @@ class MainWindow : public QMainWindow
         void on_absoluteButton_clicked(bool checked);
         void on_relativeButton_clicked(bool checked);
         void on_radioButton_clicked(bool checked);
+
+        void on_useNewMouseEvent_stateChanged(int arg1);
+
+        void on_doubleSpinBox_3_valueChanged(double arg1);
+
+        void on_doubleSpinBox_2_valueChanged(double arg1);
+
+        void on_doubleSpinBox_valueChanged(double arg1);
 
     private:
         Ui::MainWindow *ui;

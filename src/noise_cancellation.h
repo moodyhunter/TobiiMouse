@@ -1,7 +1,6 @@
 #ifndef NOISE_CANCELLATION_H
 #define NOISE_CANCELLATION_H
 #include <tuple>
-#include "tobiimouse.h"
 #include <cmath>
 using namespace std;
 namespace NoiseCancellation

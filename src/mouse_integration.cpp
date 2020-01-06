@@ -14,9 +14,11 @@ namespace MouseIntegration
     // For Move by screen sectors.
     static int InitialSpeed = 0; // pixels
     static double ScaleFactor = 16; // factor of square when gaze is near the margin.
-    static double HorizontalThrehold = 0.15;
-    static double VerticalThrehold = 0.15;
-
+    static double HorizontalThreshold = 0.15;
+    static double VerticalThreshold = 0.15;
+    //
+    static bool UseNewMouseMoveFunction = false;
+    //
 #ifdef __linux__
     static Display *_display;
     static Window _root_window;
@@ -28,9 +30,9 @@ namespace MouseIntegration
 #ifdef _WIN32
 WINBOOL CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC hdc, LPRECT lPRect, LPARAM _param)
 {
-    UNUSED(hmonitor);
-    UNUSED(hdc);
-    UNUSED(_param);
+    Q_UNUSED(hmonitor)
+    Q_UNUSED(hdc)
+    Q_UNUSED(_param)
     Monitors.insert(Monitors.end(), *lPRect);
     ScreenWidth = lPRect->right - lPRect->left;
     ScreenHeight = lPRect->bottom - lPRect->top;
@@ -38,12 +40,30 @@ WINBOOL CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC 
 }
 #endif
 
+void MouseIntegration::SetUseNewMouseMoveFunction(bool useNew)
+{
+    UseNewMouseMoveFunction = useNew;
+}
+
+void MouseIntegration::SetVThreashould(double Vth)
+{
+    VerticalThreshold = Vth;
+}
+void MouseIntegration::SetHThreashould(double Hth)
+{
+    HorizontalThreshold = Hth;
+}
+void MouseIntegration::SetMouseScaleFactor(double R)
+{
+    ScaleFactor = R;
+}
+
 void MouseIntegration::MoveMouseByScreenSection(int x, int y)
 {
     auto screenCenterX = static_cast<int>(ScreenWidth / 2);
     auto screenCenterY = static_cast<int>(ScreenHeight / 2);
-    auto horizontalNoDetectRange = ((ScreenWidth - screenCenterX) * HorizontalThrehold);
-    auto verticalNoDetectRange = ((ScreenHeight - screenCenterY) * VerticalThrehold);
+    auto horizontalNoDetectRange = ((ScreenWidth - screenCenterX) * HorizontalThreshold);
+    auto verticalNoDetectRange = ((ScreenHeight - screenCenterY) * VerticalThreshold);
     auto noDetectRect_Left = screenCenterX - horizontalNoDetectRange;
     auto noDetectRect_Top = screenCenterY - verticalNoDetectRange;
     auto noDetectRect_Right = screenCenterX + horizontalNoDetectRange;
@@ -105,14 +125,13 @@ void MouseIntegration::MoveMouseOffset(int x, int y)
     XTestFakeRelativeMotionEvent(_display, x - LastX, y - LastY, 0);
     XFlush(_display);
 #elif _WIN32
-    bool UseNewMouseMoveFunction = false;
 
     if (UseNewMouseMoveFunction) {
         INPUT ip;
         ip.type = INPUT_MOUSE;
         ip.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
-        ip.mi.dx = ((x) * (0xFFFF / ScreenWidth));
-        ip.mi.dy = ((y) * (0xFFFF / ScreenHeight));
+        ip.mi.dx = (0xFFFF / ScreenWidth) * x;
+        ip.mi.dy = (0xFFFF / ScreenHeight) * y;
         ip.mi.time = 0;
         ip.mi.mouseData = 0;
         SendInput(1, &ip, sizeof(ip));
@@ -128,7 +147,7 @@ void MouseIntegration::SetWorkingMode(MOUSEWORKINGMODE_E mode)
     WorkingMode = mode;
 }
 
-tuple<int, int> MouseIntegration::ProcessGazePosition(float x, float y)
+void MouseIntegration::OnGaze(float x, float y)
 {
     float width = ScreenWidth;
     float height = ScreenHeight;
@@ -136,16 +155,8 @@ tuple<int, int> MouseIntegration::ProcessGazePosition(float x, float y)
     auto realGazeY = height * y;
     auto filtered = NoiseCancellation::CancelNoise(realGazeX, realGazeY);
     //auto count = ScreenCount(_display); //Get total screen count.
-    float gazeX_f = get<0>(filtered);
-    float gazeY_f = get<1>(filtered);
-    return tuple<int, int>(static_cast<int>(gazeX_f), static_cast<int>(gazeY_f));
-}
-
-void MouseIntegration::OnGaze(float x, float y)
-{
-    auto data = ProcessGazePosition(x, y);
-    auto posiX = get<0>(data);
-    auto posiY = get<1>(data);
+    auto posiX = static_cast<int>(get<0>(filtered));
+    auto posiY = static_cast<int>(get<1>(filtered));
 
     switch (WorkingMode) {
         case TOBII_MOUSE_MODE_MOVE_ABSOLUTE:

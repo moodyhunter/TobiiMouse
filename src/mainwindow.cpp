@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 {
     ui->setupUi(this);
-    TobiiInteractive::init();
+    TobiiInteractive::Initialise();
     reloadTobiiDeviceList();
     MainWindow::instance = this;
 }
@@ -32,7 +32,7 @@ void MainWindow::OnGazePositionUIUpdate(float x, float y)
 
 void MainWindow::reloadTobiiDeviceList()
 {
-    auto devices = TobiiInteractive::reload_devices();
+    auto devices = TobiiInteractive::ReloadDevices();
     ui->tobiiDevicesList->clear();
     ui->tobiiDevicesList->addItems(devices);
 
@@ -42,7 +42,7 @@ void MainWindow::reloadTobiiDeviceList()
 }
 MainWindow::~MainWindow()
 {
-    TobiiInteractive::stop_subscribe_gaze();
+    TobiiInteractive::StopSubscribeGaze();
     delete ui;
 }
 
@@ -56,13 +56,13 @@ void MainWindow::on_useSelectedDeviceButton_clicked()
     if (!ui->tobiiDevicesList->selectedItems().isEmpty()) {
         QString currentSelected = ui->tobiiDevicesList->selectedItems().first()->text();
         ui->currentDeviceLabel->setText(currentSelected);
-        TobiiInteractive::start_subscribe_gaze(currentSelected);
+        TobiiInteractive::StartSubscribeGaze(currentSelected);
     }
 }
 
 void MainWindow::on_actionQuit_triggered()
 {
-    TobiiInteractive::stop_subscribe_gaze();
+    TobiiInteractive::StopSubscribeGaze();
     QApplication::quit();
 }
 
@@ -79,4 +79,27 @@ void MainWindow::on_relativeButton_clicked(bool checked)
 void MainWindow::on_radioButton_clicked(bool checked)
 {
     if (checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_SECTIONS);
+}
+
+void MainWindow::on_useNewMouseEvent_stateChanged(int arg1)
+{
+    MouseIntegration::SetUseNewMouseMoveFunction(arg1 == Qt::Checked);
+}
+
+void MainWindow::on_doubleSpinBox_3_valueChanged(double arg1)
+{
+    //V
+    MouseIntegration::SetVThreashould(arg1);
+}
+
+void MainWindow::on_doubleSpinBox_2_valueChanged(double arg1)
+{
+    //H
+    MouseIntegration::SetHThreashould(arg1);
+}
+
+void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
+{
+    //R
+    MouseIntegration::SetMouseScaleFactor(arg1);
 }

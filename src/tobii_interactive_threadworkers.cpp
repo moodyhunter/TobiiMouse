@@ -6,19 +6,19 @@
 
 using namespace TobiiInteractive;
 
-static tobii_device_t *device;
+static tobii_device_t *thisDevice;
 
-void TobiiInteractive::connectivityWorker::doWork(void *data1, void *data2)
+void TobiiInteractive::GazePointWorker::doWork(void *data1)
 {
-    device = static_cast<tobii_device_t *>(data1);
-    auto enabled = static_cast<bool *>(data2);
+    thisDevice = static_cast<tobii_device_t *>(data1);
+    bool subscribed = false;
 
-    while (*enabled) {
+    while (isRunning) {
         // Do a timed blocking wait for new gaze data, will time out after some hundred milliseconds
         // I don't know why they have two different functions for Windows and Linux.....
         // See: tobii.h:131
 #ifdef __WIN32
-        auto error = tobii_wait_for_callbacks(nullptr, 1, &device);   //The nullptr is for &tobii_engine
+        auto error = tobii_wait_for_callbacks(nullptr, 1, &thisDevice);   //The nullptr is for &tobii_engine
 #else
         auto error = tobii_wait_for_callbacks(1, &device);   //Linux API Provides no such tobii_engine implementation. AFAIK.
 #endif
@@ -27,7 +27,7 @@ void TobiiInteractive::connectivityWorker::doWork(void *data1, void *data2)
 
         if (error == TOBII_ERROR_CONNECTION_FAILED) {
             // Block here while attempting reconnect, if it fails, exit the thread
-            error = reconnect(device);
+            error = ReconnectTobii(thisDevice);
 
             if (error != TOBII_ERROR_NO_ERROR) {
                 std::cerr << "Connection was lost and reconnection failed." << std::endl;
@@ -41,11 +41,11 @@ void TobiiInteractive::connectivityWorker::doWork(void *data1, void *data2)
         }
 
         // Calling this function will execute the subscription callback functions
-        error = tobii_device_process_callbacks(device);
+        error = tobii_device_process_callbacks(thisDevice);
 
         if (error == TOBII_ERROR_CONNECTION_FAILED) {
             // Block here while attempting reconnect, if it fails, exit the thread
-            error = reconnect(device);
+            error = ReconnectTobii(thisDevice);
 
             if (error != TOBII_ERROR_NO_ERROR) {
                 std::cerr << "Connection was lost and reconnection failed." << std::endl;
@@ -56,52 +56,37 @@ void TobiiInteractive::connectivityWorker::doWork(void *data1, void *data2)
         } else if (error != TOBII_ERROR_NO_ERROR) {
             std::cerr << "tobii_device_process_callbacks failed: " << tobii_error_message(error) << "." << std::endl;
             emit ResultReady(nullptr);
+        } else {
+            if (!subscribed) {
+                error = tobii_gaze_point_subscribe(thisDevice, TobiiInteractive::GazeCallback, this);
+
+                if (error != TOBII_ERROR_NO_ERROR) {
+                    std::cerr << "Failed to subscribe to gaze stream." << tobii_error_message(error) << std::endl;
+                } else {
+                    subscribed = true;
+                }
+            }
         }
-    }
-}
-
-// ------------------------------------- GAZE ------------------------------------------------
-
-void TobiiInteractive::gazeWorker::doWork(void *data1, void *data2)
-{
-    Q_UNUSED(data2)
-    //&GazeEnabled, This (used in slot emitter)
-    tuple<bool *, QThreadWorker *> pointers(static_cast<bool *>(data1), this);
-    auto err = tobii_gaze_point_subscribe(device, TobiiInteractive::GazeCallback, &pointers);
-
-    if (err != TOBII_ERROR_NO_ERROR) {
-        std::cerr << "Failed to subscribe to gaze stream." << tobii_error_message(err) << std::endl;
     }
 }
 
 void TobiiInteractive::GazeCallback(tobii_gaze_point_t const *gaze_point, void *user_data)
 {
-    auto data_collection = *reinterpret_cast<tuple<bool *, QThreadWorker *>*>(user_data);
-    auto enabled = get<0>(data_collection);
+    if (isRunning) {
+        auto _this = static_cast<QThreadWorker *>(user_data);
 
-    if (*enabled && gaze_point->validity == TOBII_VALIDITY_VALID) {
-#ifdef __linux__
-        auto _this = get<1>(data_collection);
-        tuple<float, float> results(gaze_point->position_xy[0], gaze_point->position_xy[1]);
-        emit _this->ResultReady(&results);
-#elif _WIN32
-        // Workaround of some strange pointer bug...
-        mwindow->OnGazePositionUIUpdate(gaze_point->position_xy[0], gaze_point->position_xy[1]);
-        MouseIntegration::OnGaze(gaze_point->position_xy[0], gaze_point->position_xy[1]);
-#endif
+        if (gaze_point->validity == TOBII_VALIDITY_VALID) {
+            auto results = make_tuple(gaze_point->position_xy[0], gaze_point->position_xy[1]);
+            emit _this->ResultReady(&results);
+        }
     }
-}
-
-void TobiiInteractive::HandleConnectivityCallback(void *data)
-{
-    assert(data == nullptr);
 }
 
 void TobiiInteractive::HandleGazeCallback(void *data)
 {
-    auto data_collection = reinterpret_cast<tuple<float, float>*>(data);
-    auto x = get<0>(*data_collection);
-    auto y = get<1>(*data_collection);
+    auto data_collection = *static_cast<tuple<float, float>*>(data);
+    auto x = get<0>(data_collection);
+    auto y = get<1>(data_collection);
     MainWindow::instance->OnGazePositionUIUpdate(x, y);
     MouseIntegration::OnGaze(x, y);
 }
