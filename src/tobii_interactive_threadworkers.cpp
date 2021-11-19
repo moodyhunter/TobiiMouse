@@ -6,7 +6,7 @@
 
 using namespace TobiiInteractive;
 
-static tobii_device_t *thisDevice;
+  tobii_device_t *thisDevice;
 
 void TobiiInteractive::GazePointWorker::doWork(void *data1)
 {
@@ -17,7 +17,7 @@ void TobiiInteractive::GazePointWorker::doWork(void *data1)
         // Do a timed blocking wait for new gaze data, will time out after some hundred milliseconds
         // I don't know why they have two different functions for Windows and Linux.....
         // See: tobii.h:131
-#ifdef __WIN32
+#ifdef Q_OS_WIN
         auto error = tobii_wait_for_callbacks(nullptr, 1, &thisDevice);   //The nullptr is for &tobii_engine
 #else
         auto error = tobii_wait_for_callbacks(1, &thisDevice);   //Linux API Provides no such tobii_engine implementation. AFAIK.
@@ -76,7 +76,7 @@ void TobiiInteractive::GazeCallback(tobii_gaze_point_t const *gaze_point, void *
         auto _this = static_cast<QThreadWorker *>(user_data);
 
         if (gaze_point->validity == TOBII_VALIDITY_VALID) {
-            auto results = make_tuple(gaze_point->position_xy[0], gaze_point->position_xy[1]);
+            auto results =std::make_tuple(gaze_point->position_xy[0], gaze_point->position_xy[1]);
             emit _this->ResultReady(&results);
         }
     }
@@ -84,9 +84,9 @@ void TobiiInteractive::GazeCallback(tobii_gaze_point_t const *gaze_point, void *
 
 void TobiiInteractive::HandleGazeCallback(void *data)
 {
-    auto data_collection = *static_cast<tuple<float, float>*>(data);
-    auto x = get<0>(data_collection);
-    auto y = get<1>(data_collection);
+    auto data_collection = *static_cast<std::tuple<float, float>*>(data);
+    auto x = std::get<0>(data_collection);
+    auto y = std::get<1>(data_collection);
     MainWindow::instance->OnGazePositionUIUpdate(x, y);
     MouseIntegration::OnGaze(x, y);
 }

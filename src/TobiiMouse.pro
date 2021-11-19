@@ -16,7 +16,7 @@ TEMPLATE = app
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
 # deprecated API in order to know how to port your code away from it.
-DEFINES += QT_DEPRECATED_WARNINGS
+DEFINES += QT_DEPRECATED_WARNINGS __WIN32
 
 SOURCES += \
         main.cpp \
@@ -55,10 +55,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 unix:!macx: LIBS += -lX11 -lXrandr -lXtst
 
 # Tobii LIBs
-INCLUDEPATH += $$PWD/lib/x86
-DEPENDPATH += $$PWD/lib/x86
-LIBS += -L$$PWD/lib/x86/ -ltobii_stream_engine
+#INCLUDEPATH += $$PWD/lib/x86
+#DEPENDPATH += $$PWD/lib/x86
+#LIBS += -L$$PWD/lib/x86/ -ltobii_stream_engine
 
 INCLUDEPATH += $$PWD/lib/x64
 DEPENDPATH += $$PWD/lib/x64
-LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine
+LIBS += -L$$PWD/lib/x64/ -ltobii_stream_engine -luser32

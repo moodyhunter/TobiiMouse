@@ -2,11 +2,11 @@
 #define NOISE_CANCELLATION_H
 #include <tuple>
 #include <cmath>
-using namespace std;
+//using namespace std;
 namespace NoiseCancellation
 {
     void init();
-    tuple<float, float> CancelNoise(float x, float y);
+    std::tuple<float, float> CancelNoise(float x, float y);
 };
 
 #endif // NOISE_CANCELLATION_H

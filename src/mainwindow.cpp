@@ -9,7 +9,7 @@
 #include <iostream>
 
 
-using namespace std;
+//using namespace std;
 
 MainWindow *MainWindow::instance = nullptr;
 
@@ -54,7 +54,9 @@ void MainWindow::on_reloadListButton_clicked()
 void MainWindow::on_useSelectedDeviceButton_clicked()
 {
     if (!ui->tobiiDevicesList->selectedItems().isEmpty()) {
-        QString currentSelected = ui->tobiiDevicesList->selectedItems().first()->text();
+        const auto x = ui->tobiiDevicesList->currentItem()->text();
+        QString currentSelected = x;
+        QMessageBox::warning(this, "shit", x);
         ui->currentDeviceLabel->setText(currentSelected);
         TobiiInteractive::StartSubscribeGaze(currentSelected);
     }
@@ -103,3 +105,9 @@ void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
     //R
     MouseIntegration::SetMouseScaleFactor(arg1);
 }
+
+void MainWindow::on_tobiiDevicesList_currentRowChanged(int currentRow)
+{
+
+}
+

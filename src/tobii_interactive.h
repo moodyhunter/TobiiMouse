@@ -9,7 +9,7 @@
 #include "qthread_controller/qthreadcontroller.h"
 #include "qthread_controller/qthreadworker.h"
 
-using namespace std;
+//using namespace std;
 using namespace QThreadController;
 
 namespace TobiiInteractive

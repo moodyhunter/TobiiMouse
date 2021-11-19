@@ -43,7 +43,7 @@ QStringList TobiiInteractive::ReloadDevices()
 
 tobii_error_t TobiiInteractive::ReconnectTobii(tobii_device_t *device)
 {
-    cout << "Reconnecting..." << endl;
+ std::   cout << "Reconnecting..." << std::endl;
 
     // Try reconnecting for 10 seconds before giving up
     for (int i = 0; i < 40; ++i) {
@@ -64,10 +64,10 @@ int TobiiInteractive::StartSubscribeGaze(QString deviceUrl)
     }
 
     isRunning = true;
-    cout << "Device: " << deviceUrl.toStdString() << "." << endl;
+    std::cout << "Device: " << deviceUrl.toStdString() << "." << std::endl;
     lasterr = tobii_device_create(api, deviceUrl.toStdString().c_str(), &CurrentDevice);
-    assert(lasterr == TOBII_ERROR_NO_ERROR);
-    cout << "tobii_device_create returns: " << tobii_error_message(lasterr) << endl;
+    Q_ASSERT(lasterr == TOBII_ERROR_NO_ERROR);
+    std::cout << "tobii_device_create returns: " << tobii_error_message(lasterr) << std::endl;
     //
     // Start the background processing thread before subscribing to data.
     gazeController->StartOperate(CurrentDevice);

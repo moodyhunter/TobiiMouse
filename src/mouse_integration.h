@@ -17,7 +17,7 @@
 #error "Unknown Operating System..."
 #endif
 
-using namespace std;
+//using namespace std;
 
 enum MOUSEWORKINGMODE_E {
     TOBII_MOUSE_MODE_MOVE_ABSOLUTE,
@@ -41,7 +41,7 @@ namespace MouseIntegration
     void SetMouseScaleFactor(double R);
     //
 #ifdef _WIN32
-    WINBOOL CALLBACK EnumMonitors_CALLBACK(HMONITOR a, HDC b, LPRECT c, LPARAM d);
+    int CALLBACK EnumMonitors_CALLBACK(HMONITOR a, HDC b, LPRECT c, LPARAM d);
 #endif
 
 };

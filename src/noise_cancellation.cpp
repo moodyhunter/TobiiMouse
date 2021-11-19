@@ -9,7 +9,7 @@
 
 namespace NoiseCancellation
 {
-    static tuple<float, float> lastdata;
+    static std::tuple<float, float> lastdata;
 
     static constexpr const float FDeadZone = 8.0;       // pixels
     static constexpr const float g_SlowZone = 40;       // pixels
@@ -34,7 +34,7 @@ namespace NoiseCancellation
 
 void NoiseCancellation::init() {}
 
-tuple<float, float> NoiseCancellation::CancelNoise(float x, float y)
+std::tuple<float, float> NoiseCancellation::CancelNoise(float x, float y)
 {
     if (pow(fabs(lastRawX - x), 2) + pow(fabs(lastRawY - y), 2) > 320) { // For some huge errors, such as the blinking eyes.
         lastRawX = x;
@@ -68,7 +68,7 @@ tuple<float, float> NoiseCancellation::CancelNoise(float x, float y)
         integratedErrorY = 0;
     }
 
-    tuple<float, float> filteredData(filteredX, filteredY);
+    std::tuple<float, float> filteredData(filteredX, filteredY);
     lastdata = filteredData;
     return filteredData;
 }

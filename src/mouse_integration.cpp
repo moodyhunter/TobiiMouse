@@ -23,12 +23,12 @@ namespace MouseIntegration
     static Display *_display;
     static Window _root_window;
 #elif _WIN32
-    static vector<RECT> Monitors;
+    static std::vector<RECT> Monitors;
 #endif
 }
 
 #ifdef _WIN32
-WINBOOL CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC hdc, LPRECT lPRect, LPARAM _param)
+int CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC hdc, LPRECT lPRect, LPARAM _param)
 {
     Q_UNUSED(hmonitor)
     Q_UNUSED(hdc)
@@ -155,8 +155,8 @@ void MouseIntegration::OnGaze(float x, float y)
     auto realGazeY = height * y;
     auto filtered = NoiseCancellation::CancelNoise(realGazeX, realGazeY);
     //auto count = ScreenCount(_display); //Get total screen count.
-    auto posiX = static_cast<int>(get<0>(filtered));
-    auto posiY = static_cast<int>(get<1>(filtered));
+    auto posiX = static_cast<int>(std::get<0>(filtered));
+    auto posiY = static_cast<int>(std::get<1>(filtered));
 
     switch (WorkingMode) {
         case TOBII_MOUSE_MODE_MOVE_ABSOLUTE:

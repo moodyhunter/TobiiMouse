@@ -39,7 +39,9 @@ class MainWindow : public QMainWindow
 
         void on_doubleSpinBox_valueChanged(double arg1);
 
-    private:
+        void on_tobiiDevicesList_currentRowChanged(int currentRow);
+
+      private:
         Ui::MainWindow *ui;
 };
 

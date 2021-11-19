@@ -6,7 +6,6 @@ QThreadController::ThreadController::ThreadController(QThreadWorker *instance, H
     worker = instance;
     callback = _callback;
     worker->moveToThread(&workerThread);
-    //connect(&workerThread, &QThread::finished, worker, &QObject::deleteLater);
     connect(this, &ThreadController::Operate, worker, &QThreadWorker::doWork);
     connect(worker, &QThreadWorker::ResultReady, this, &ThreadController::HandleResults);
     workerThread.start();
