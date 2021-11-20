@@ -1,15 +1,10 @@
-# TobiiMouse [![HitCount](http://hits.dwyl.io/lhy0403/TobiiMouse.svg)](http://hits.dwyl.io/lhy0403/TobiiMouse)
+# TobiiMouse
 
-Make tobii EyeTracker act like a mouse.
-
-
-Travis CI: [![Build Status](https://travis-ci.com/lhy0403/TobiiMouse.svg?branch=master)](https://travis-ci.com/lhy0403/TobiiMouse)
-
-AppVeyor: [![Build status](https://ci.appveyor.com/api/projects/status/06yq9v21s6b619nh/branch/master?svg=true)](https://ci.appveyor.com/project/lhy0403/tobiimouse/branch/master)
+Make Tobii EyeTracker your mouse.
 
 ## Dependencies
 ### Linux:
- - X11 and XRandr development header.
+ - X11, XRandr development header.
  
 ### Windows: 
  - Coming soon.
@@ -36,6 +31,7 @@ make
 
 # Done, if everything goes well, you should have successfully built it.
 ```
+
 ### For Windows:
 ```cmd
 REM Coming soon!
