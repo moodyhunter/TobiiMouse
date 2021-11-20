@@ -3,10 +3,10 @@ COPYRIGHT 2015 - PROPERTY OF TOBII AB
 -------------------------------------
 2015 TOBII AB - KARLSROVAGEN 2D, DANDERYD 182 53, SWEDEN - All Rights Reserved.
 
-NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.  
-The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be 
-covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law. 
-Dissemination of this information or reproduction of this material is strictly forbidden unless prior written 
+NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.
+The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be
+covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law.
+Dissemination of this information or reproduction of this material is strictly forbidden unless prior written
 permission is obtained from Tobii AB.
 */
 
@@ -16,140 +16,126 @@ permission is obtained from Tobii AB.
 #include "tobii.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef struct tobii_gaze_point_t
-{
-    int64_t timestamp_us;
-    tobii_validity_t validity;
-    float position_xy[ 2 ];
-} tobii_gaze_point_t;
-
-typedef void ( *tobii_gaze_point_callback_t )( tobii_gaze_point_t const* gaze_point, void* user_data );
-
-TOBII_API tobii_error_t TOBII_CALL tobii_gaze_point_subscribe( tobii_device_t* device,
-    tobii_gaze_point_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_gaze_point_unsubscribe( tobii_device_t* device );
-
-
-typedef struct tobii_gaze_origin_t
-{
-    int64_t timestamp_us;
-    tobii_validity_t left_validity;
-    float left_xyz[ 3 ];
-    tobii_validity_t right_validity;
-    float right_xyz[ 3 ];
-} tobii_gaze_origin_t;
-
-typedef void ( *tobii_gaze_origin_callback_t )( tobii_gaze_origin_t const* gaze_origin, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_gaze_origin_subscribe( tobii_device_t* device,
-    tobii_gaze_origin_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_gaze_origin_unsubscribe( tobii_device_t* device );
-
-
-typedef struct tobii_eye_position_normalized_t
-{
-    int64_t timestamp_us;
-    tobii_validity_t left_validity;
-    float left_xyz[ 3 ];
-    tobii_validity_t right_validity;
-    float right_xyz[ 3 ];
-} tobii_eye_position_normalized_t;
-
-typedef void ( *tobii_eye_position_normalized_callback_t )( tobii_eye_position_normalized_t const* eye_position, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_eye_position_normalized_subscribe( tobii_device_t* device,
-    tobii_eye_position_normalized_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_eye_position_normalized_unsubscribe( tobii_device_t* device );
-
-
-typedef enum tobii_user_presence_status_t
-{
-    TOBII_USER_PRESENCE_STATUS_UNKNOWN,
-    TOBII_USER_PRESENCE_STATUS_AWAY,
-    TOBII_USER_PRESENCE_STATUS_PRESENT,
-} tobii_user_presence_status_t;
-
-typedef void ( *tobii_user_presence_callback_t )( tobii_user_presence_status_t status, int64_t timestamp_us,
-    void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_user_presence_subscribe( tobii_device_t* device,
-    tobii_user_presence_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_user_presence_unsubscribe( tobii_device_t* device );
-
-
-typedef struct tobii_head_pose_t
-{
-    int64_t timestamp_us;
-    tobii_validity_t position_validity;
-    float position_xyz[ 3 ];
-    tobii_validity_t rotation_validity_xyz[ 3 ];
-    float rotation_xyz[ 3 ];
-} tobii_head_pose_t;
-
-typedef void( *tobii_head_pose_callback_t )( tobii_head_pose_t const* head_pose, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_head_pose_subscribe( tobii_device_t* device,
-    tobii_head_pose_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_head_pose_unsubscribe( tobii_device_t* device );
-
-
-typedef enum tobii_notification_type_t
-{
-    TOBII_NOTIFICATION_TYPE_CALIBRATION_STATE_CHANGED,
-    TOBII_NOTIFICATION_TYPE_EXCLUSIVE_MODE_STATE_CHANGED,
-    TOBII_NOTIFICATION_TYPE_TRACK_BOX_CHANGED,
-    TOBII_NOTIFICATION_TYPE_DISPLAY_AREA_CHANGED,
-    TOBII_NOTIFICATION_TYPE_FRAMERATE_CHANGED,
-    TOBII_NOTIFICATION_TYPE_POWER_SAVE_STATE_CHANGED,
-    TOBII_NOTIFICATION_TYPE_DEVICE_PAUSED_STATE_CHANGED,
-    TOBII_NOTIFICATION_TYPE_CALIBRATION_ENABLED_EYE_CHANGED,
-    TOBII_NOTIFICATION_TYPE_CALIBRATION_ID_CHANGED,
-    TOBII_NOTIFICATION_TYPE_COMBINED_GAZE_FACTOR_CHANGED,
-    TOBII_NOTIFICATION_TYPE_FAULTS_CHANGED,
-    TOBII_NOTIFICATION_TYPE_WARNINGS_CHANGED,
-    TOBII_NOTIFICATION_TYPE_FACE_TYPE_CHANGED,
-} tobii_notification_type_t;
-
-typedef enum tobii_notification_value_type_t
-{
-    TOBII_NOTIFICATION_VALUE_TYPE_NONE,
-    TOBII_NOTIFICATION_VALUE_TYPE_FLOAT,
-    TOBII_NOTIFICATION_VALUE_TYPE_STATE,
-    TOBII_NOTIFICATION_VALUE_TYPE_DISPLAY_AREA,
-    TOBII_NOTIFICATION_VALUE_TYPE_UINT,
-    TOBII_NOTIFICATION_VALUE_TYPE_ENABLED_EYE,
-    TOBII_NOTIFICATION_VALUE_TYPE_STRING,
-} tobii_notification_value_type_t;
-
-typedef struct tobii_notification_t
-{
-    tobii_notification_type_t type;
-    tobii_notification_value_type_t value_type;
-    union
+    typedef struct tobii_gaze_point_t
     {
-        float float_;
-        tobii_state_bool_t state;
-        tobii_display_area_t display_area;
-        uint32_t uint_;
-        tobii_enabled_eye_t enabled_eye;
-        tobii_state_string_t string_;
-    } value;
+        int64_t timestamp_us;
+        tobii_validity_t validity;
+        float position_xy[2];
+    } tobii_gaze_point_t;
 
-} tobii_notification_t;
+    typedef void (*tobii_gaze_point_callback_t)(tobii_gaze_point_t const *gaze_point, void *user_data);
 
-typedef void( *tobii_notifications_callback_t )( tobii_notification_t const* notification,
-    void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_notifications_subscribe( tobii_device_t* device,
-    tobii_notifications_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_notifications_unsubscribe( tobii_device_t* device );
+    TOBII_API tobii_error_t TOBII_CALL tobii_gaze_point_subscribe(tobii_device_t *device, tobii_gaze_point_callback_t callback, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_gaze_point_unsubscribe(tobii_device_t *device);
 
+    typedef struct tobii_gaze_origin_t
+    {
+        int64_t timestamp_us;
+        tobii_validity_t left_validity;
+        float left_xyz[3];
+        tobii_validity_t right_validity;
+        float right_xyz[3];
+    } tobii_gaze_origin_t;
 
+    typedef void (*tobii_gaze_origin_callback_t)(tobii_gaze_origin_t const *gaze_origin, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_gaze_origin_subscribe(tobii_device_t *device, tobii_gaze_origin_callback_t callback, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_gaze_origin_unsubscribe(tobii_device_t *device);
+
+    typedef struct tobii_eye_position_normalized_t
+    {
+        int64_t timestamp_us;
+        tobii_validity_t left_validity;
+        float left_xyz[3];
+        tobii_validity_t right_validity;
+        float right_xyz[3];
+    } tobii_eye_position_normalized_t;
+
+    typedef void (*tobii_eye_position_normalized_callback_t)(tobii_eye_position_normalized_t const *eye_position, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_eye_position_normalized_subscribe(tobii_device_t *device, tobii_eye_position_normalized_callback_t callback,
+                                                                               void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_eye_position_normalized_unsubscribe(tobii_device_t *device);
+
+    typedef enum tobii_user_presence_status_t
+    {
+        TOBII_USER_PRESENCE_STATUS_UNKNOWN,
+        TOBII_USER_PRESENCE_STATUS_AWAY,
+        TOBII_USER_PRESENCE_STATUS_PRESENT,
+    } tobii_user_presence_status_t;
+
+    typedef void (*tobii_user_presence_callback_t)(tobii_user_presence_status_t status, int64_t timestamp_us, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_user_presence_subscribe(tobii_device_t *device, tobii_user_presence_callback_t callback, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_user_presence_unsubscribe(tobii_device_t *device);
+
+    typedef struct tobii_head_pose_t
+    {
+        int64_t timestamp_us;
+        tobii_validity_t position_validity;
+        float position_xyz[3];
+        tobii_validity_t rotation_validity_xyz[3];
+        float rotation_xyz[3];
+    } tobii_head_pose_t;
+
+    typedef void (*tobii_head_pose_callback_t)(tobii_head_pose_t const *head_pose, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_head_pose_subscribe(tobii_device_t *device, tobii_head_pose_callback_t callback, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_head_pose_unsubscribe(tobii_device_t *device);
+
+    typedef enum tobii_notification_type_t
+    {
+        TOBII_NOTIFICATION_TYPE_CALIBRATION_STATE_CHANGED,
+        TOBII_NOTIFICATION_TYPE_EXCLUSIVE_MODE_STATE_CHANGED,
+        TOBII_NOTIFICATION_TYPE_TRACK_BOX_CHANGED,
+        TOBII_NOTIFICATION_TYPE_DISPLAY_AREA_CHANGED,
+        TOBII_NOTIFICATION_TYPE_FRAMERATE_CHANGED,
+        TOBII_NOTIFICATION_TYPE_POWER_SAVE_STATE_CHANGED,
+        TOBII_NOTIFICATION_TYPE_DEVICE_PAUSED_STATE_CHANGED,
+        TOBII_NOTIFICATION_TYPE_CALIBRATION_ENABLED_EYE_CHANGED,
+        TOBII_NOTIFICATION_TYPE_CALIBRATION_ID_CHANGED,
+        TOBII_NOTIFICATION_TYPE_COMBINED_GAZE_FACTOR_CHANGED,
+        TOBII_NOTIFICATION_TYPE_FAULTS_CHANGED,
+        TOBII_NOTIFICATION_TYPE_WARNINGS_CHANGED,
+        TOBII_NOTIFICATION_TYPE_FACE_TYPE_CHANGED,
+    } tobii_notification_type_t;
+
+    typedef enum tobii_notification_value_type_t
+    {
+        TOBII_NOTIFICATION_VALUE_TYPE_NONE,
+        TOBII_NOTIFICATION_VALUE_TYPE_FLOAT,
+        TOBII_NOTIFICATION_VALUE_TYPE_STATE,
+        TOBII_NOTIFICATION_VALUE_TYPE_DISPLAY_AREA,
+        TOBII_NOTIFICATION_VALUE_TYPE_UINT,
+        TOBII_NOTIFICATION_VALUE_TYPE_ENABLED_EYE,
+        TOBII_NOTIFICATION_VALUE_TYPE_STRING,
+    } tobii_notification_value_type_t;
+
+    typedef struct tobii_notification_t
+    {
+        tobii_notification_type_t type;
+        tobii_notification_value_type_t value_type;
+        union
+        {
+            float float_;
+            tobii_state_bool_t state;
+            tobii_display_area_t display_area;
+            uint32_t uint_;
+            tobii_enabled_eye_t enabled_eye;
+            tobii_state_string_t string_;
+        } value;
+
+    } tobii_notification_t;
+
+    typedef void (*tobii_notifications_callback_t)(tobii_notification_t const *notification, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_notifications_subscribe(tobii_device_t *device, tobii_notifications_callback_t callback, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_notifications_unsubscribe(tobii_device_t *device);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* tobii_streams_h_included */
-
 
 /**
 @defgroup tobii_streams tobii_streams.h
@@ -216,8 +202,8 @@ This function will be called when there is new gaze data available. It is called
         the *position_xy* field is unspecified unless *validity* is **TOBII_VALIDITY_VALID**.
 
     -   *position_xy*
-        An array of two floats, for the horizontal (x) and vertical (y) screen coordinate of the gaze point. The left 
-        edge of the screen is 0.0, and the right edge is 1.0. The top edge of the screen is 0.0, and the bottom edge is 
+        An array of two floats, for the horizontal (x) and vertical (y) screen coordinate of the gaze point. The left
+        edge of the screen is 0.0, and the right edge is 1.0. The top edge of the screen is 0.0, and the bottom edge is
         1.0. Note that the value might be outside the 0.0 to 1.0 range, if the user looks outside the screen.
 
 
@@ -235,7 +221,7 @@ fails, tobii_gaze_point_subscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* or *callback* parameters were passed in as NULL. 
+    The *device* or *callback* parameters were passed in as NULL.
 
 -   **TOBII_ERROR_ALREADY_SUBSCRIBED**
 
@@ -259,8 +245,8 @@ fails, tobii_gaze_point_subscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_gaze_point_subscribe from within a callback function is not supported.
 
@@ -273,9 +259,9 @@ tobii_gaze_point_unsubscribe(), tobii_device_process_callbacks(), tobii_system_c
 
 @code{.c}
 
-    #include <tobii/tobii_streams.h>
-    #include <stdio.h>
     #include <assert.h>
+    #include <stdio.h>
+    #include <tobii/tobii_streams.h>
 
     void gaze_point_callback( tobii_gaze_point_t const* gaze_point, void* user_data )
     {
@@ -336,7 +322,6 @@ tobii_gaze_point_unsubscribe(), tobii_device_process_callbacks(), tobii_system_c
 
 */
 
-
 /**
 @fn TOBII_API tobii_error_t TOBII_CALL tobii_gaze_point_unsubscribe( tobii_device_t* device );
 @ingroup tobii_streams
@@ -367,7 +352,7 @@ fails, tobii_gaze_point_unsubscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* parameter was passed in as NULL. 
+    The *device* parameter was passed in as NULL.
 
 -   **TOBII_ERROR_NOT_SUBSCRIBED**
 
@@ -386,8 +371,8 @@ fails, tobii_gaze_point_unsubscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_gaze_point_unsubscribe from within a callback function is not supported.
 
@@ -401,7 +386,6 @@ tobii_gaze_point_subscribe()
 See tobii_gaze_point_subscribe()
 
 */
-
 
 /**
 @fn TOBII_API tobii_error_t TOBII_CALL tobii_gaze_origin_subscribe( tobii_device_t* device, tobii_gaze_origin_callback_t callback, void* user_data );
@@ -425,8 +409,8 @@ of the display.
 
 ### Remarks
 
-This subscription is for receiving the origin of the gaze vector, measured in millimeters from the center of the 
-display. Gaze origin is a point on the users eye, but the exact point of the origin varies by device. For example, it 
+This subscription is for receiving the origin of the gaze vector, measured in millimeters from the center of the
+display. Gaze origin is a point on the users eye, but the exact point of the origin varies by device. For example, it
 might be defined as the center of the pupil or the center of the cornea. The data is lightly filtered for stability.
 
 *device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create.
@@ -475,7 +459,7 @@ fails, tobii_gaze_origin_subscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* parameter was passed in as NULL. 
+    The *device* parameter was passed in as NULL.
 
 -   **TOBII_ERROR_ALREADY_SUBSCRIBED**
 
@@ -499,8 +483,8 @@ fails, tobii_gaze_origin_subscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_gaze_origin_subscribe from within a callback function is not supported.
 
@@ -514,9 +498,9 @@ tobii_system_clock()
 
 @code{.c}
 
-    #include <tobii/tobii_streams.h>
-    #include <stdio.h>
     #include <assert.h>
+    #include <stdio.h>
+    #include <tobii/tobii_streams.h>
 
     void gaze_origin_callback( tobii_gaze_origin_t const* gaze_origin, void* user_data )
     {
@@ -586,7 +570,6 @@ tobii_system_clock()
 
 */
 
-
 /**
 @fn TOBII_API tobii_error_t TOBII_CALL tobii_gaze_origin_unsubscribe( tobii_device_t* device );
 @ingroup tobii_streams
@@ -617,7 +600,7 @@ fails, tobii_gaze_origin_unsubscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* parameter was passed in as NULL. 
+    The *device* parameter was passed in as NULL.
 
 -   **TOBII_ERROR_NOT_SUBSCRIBED**
 
@@ -636,8 +619,8 @@ fails, tobii_gaze_origin_unsubscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_gaze_origin_unsubscribe from within a callback function is not supported.
 
@@ -652,9 +635,9 @@ See tobii_gaze_origin_subscribe()
 
 */
 
-
 /**
-@fn TOBII_API tobii_error_t TOBII_CALL tobii_eye_position_normalized_subscribe( tobii_device_t* device, tobii_eye_position_normalized_callback_t callback, void* user_data );
+@fn TOBII_API tobii_error_t TOBII_CALL tobii_eye_position_normalized_subscribe( tobii_device_t* device, tobii_eye_position_normalized_callback_t callback, void* user_data
+);
 @ingroup tobii_streams
 
 tobii_eye_position_normalized_subscribe
@@ -729,7 +712,7 @@ fails, tobii_eye_position_normalized_subscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* or *callback* parameter were passed in as NULL. 
+    The *device* or *callback* parameter were passed in as NULL.
 
 -   **TOBII_ERROR_ALREADY_SUBSCRIBED**
 
@@ -753,8 +736,8 @@ fails, tobii_eye_position_normalized_subscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_eye_position_normalized_subscribe from within a callback function is not supported.
 
@@ -768,9 +751,9 @@ tobii_system_clock()
 
 @code{.c}
 
-    #include <tobii/tobii_streams.h>
-    #include <stdio.h>
     #include <assert.h>
+    #include <stdio.h>
+    #include <tobii/tobii_streams.h>
 
     void eye_position_callback( tobii_eye_position_normalized_t const* eye_pos, void* user_data )
     {
@@ -840,7 +823,6 @@ tobii_system_clock()
 
 */
 
-
 /**
 @fn TOBII_API tobii_error_t TOBII_CALL tobii_eye_position_normalized_unsubscribe( tobii_device_t* device );
 @ingroup tobii_streams
@@ -856,7 +838,7 @@ Stops listening to normalized eye position stream that was subscribed to by a ca
 ### Syntax
 
     #include <tobii/tobii_streams.h>
-    tobii_error_t tobii_eye_position_normalized_unsubscribe( 
+    tobii_error_t tobii_eye_position_normalized_unsubscribe(
         tobii_device_t* device );
 
 
@@ -872,7 +854,7 @@ fails, tobii_eye_position_normalized_unsubscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* parameter was passed in as NULL. 
+    The *device* parameter was passed in as NULL.
 
 -   **TOBII_ERROR_NOT_SUBSCRIBED**
 
@@ -891,8 +873,8 @@ fails, tobii_eye_position_normalized_unsubscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_eye_position_normalized_unsubscribe from within a callback function is not supported.
 
@@ -906,7 +888,6 @@ tobii_eye_position_normalized_subscribe()
 See tobii_eye_position_normalized_subscribe()
 
 */
-
 
 /**
 @fn TOBII_API tobii_error_t TOBII_CALL tobii_user_presence_subscribe( tobii_device_t* device, tobii_user_presence_callback_t callback, void* user_data );
@@ -935,7 +916,7 @@ This subscription is for being notified when a user is detected by the device, a
 
 *callback* is a function pointer to a function with the prototype:
 
-    void presence_callback( tobii_user_presence_status_t status, int64_t timestamp_us, 
+    void presence_callback( tobii_user_presence_status_t status, int64_t timestamp_us,
         void* user_data )
 
 
@@ -969,7 +950,7 @@ fails, tobii_user_presence_subscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* or *callback* parameter were passed in as NULL. 
+    The *device* or *callback* parameter were passed in as NULL.
 
 -   **TOBII_ERROR_ALREADY_SUBSCRIBED**
 
@@ -993,8 +974,8 @@ fails, tobii_user_presence_subscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_user_presence_subscribe from within a callback function is not supported.
 
@@ -1007,9 +988,9 @@ tobii_user_presence_unsubscribe(), tobii_device_process_callbacks(), tobii_syste
 
 @code{.c}
 
-    #include <tobii/tobii_streams.h>
-    #include <stdio.h>
     #include <assert.h>
+    #include <stdio.h>
+    #include <tobii/tobii_streams.h>
 
     void presence_callback( tobii_user_presence_status_t status, int64_t timestamp_us, void* user_data )
     {
@@ -1078,7 +1059,6 @@ tobii_user_presence_unsubscribe(), tobii_device_process_callbacks(), tobii_syste
 
 */
 
-
 /**
 @fn TOBII_API tobii_error_t TOBII_CALL tobii_user_presence_unsubscribe( tobii_device_t* device );
 @ingroup tobii_streams
@@ -1121,15 +1101,15 @@ fails, tobii_user_presence_unsubscribe returns one of the following:
     The device doesn't support the stream. This error is returned if the API is called with an old device and/or that is
     running outdated firmware.
 
--   **TOBII_ERROR_INTERNAL**	
+-   **TOBII_ERROR_INTERNAL**
 
     Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
     the support
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_user_presence_unsubscribe from within a callback function is not supported.
 
@@ -1180,30 +1160,30 @@ following parameters:
 
     -   *timestamp_us*
 
-        Timestamp value for when the head pose was calculated, measured in microseconds (us). The epoch is 
-        undefined, so these timestamps are only useful for calculating the time elapsed between a pair of values. 
-        The function tobii_system_clock() can be used to retrieve a timestamp using the same clock and same relative 
+        Timestamp value for when the head pose was calculated, measured in microseconds (us). The epoch is
+        undefined, so these timestamps are only useful for calculating the time elapsed between a pair of values.
+        The function tobii_system_clock() can be used to retrieve a timestamp using the same clock and same relative
         values as this timestamp.
 
     -   *position_validity*
 
-        Indicates the validity of the position_xyz field. **TOBII_VALIDITY_INVALID** if the field is not valid, 
+        Indicates the validity of the position_xyz field. **TOBII_VALIDITY_INVALID** if the field is not valid,
         **TOBII_VALIDITY_VALID** if it is.
 
     -   *position_xyz*
 
-        An array of three floats, for the x, y and z coordinate of the head of the user, as measured in millimeters 
+        An array of three floats, for the x, y and z coordinate of the head of the user, as measured in millimeters
         from the center of the display.
 
     -   *rotation_validity_xyz*
 
-        An array indicating the validity of each elemnt of the rotation_xyz field. **TOBII_VALIDITY_INVALID** if the 
+        An array indicating the validity of each elemnt of the rotation_xyz field. **TOBII_VALIDITY_INVALID** if the
         element is not valid, **TOBII_VALIDITY_VALID** if it is.
 
     -   *rotation_xyz*
 
-        An array of three floats, for the x, y and z rotation of the head of the user. The rotation is expressed in 
-        Euler angles using right-handed rotations around each axis. The z rotation describes the rotation around the 
+        An array of three floats, for the x, y and z rotation of the head of the user. The rotation is expressed in
+        Euler angles using right-handed rotations around each axis. The z rotation describes the rotation around the
         vector pointing towards the user.
 
 
@@ -1221,7 +1201,7 @@ fails, tobii_head_pose_subscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* or *callback* parameter were passed in as NULL. 
+    The *device* or *callback* parameter were passed in as NULL.
 
 -   **TOBII_ERROR_ALREADY_SUBSCRIBED**
 
@@ -1250,8 +1230,8 @@ fails, tobii_head_pose_subscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_head_pose_subscribe from within a callback function is not supported.
 
@@ -1264,9 +1244,9 @@ tobii_head_pose_unsubscribe()
 
 @code{.c}
 
-    #include <tobii/tobii_streams.h>
-    #include <stdio.h>
     #include <assert.h>
+    #include <stdio.h>
+    #include <tobii/tobii_streams.h>
 
     void head_pose_callback( tobii_head_pose_t const* head_pose, void* user_data )
     {
@@ -1363,7 +1343,7 @@ fails, tobii_head_pose_unsubscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* parameter was passed in as NULL. 
+    The *device* parameter was passed in as NULL.
 
 -   **TOBII_ERROR_NOT_SUBSCRIBED**
 
@@ -1386,8 +1366,8 @@ fails, tobii_head_pose_unsubscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_head_pose_unsubscribe from within a callback function is not supported.
 
@@ -1423,9 +1403,9 @@ Start listening to the notifications stream, which reports state changes for a d
 
 ### Remarks
 
-As the device is a shared resource, which may be in use by multiple client applications, notifications are used to 
-inform when a state change have occured on the device, as an effect of another client performing some operation (such 
-as starting a calibration, or changing the display area). 
+As the device is a shared resource, which may be in use by multiple client applications, notifications are used to
+inform when a state change have occured on the device, as an effect of another client performing some operation (such
+as starting a calibration, or changing the display area).
 
 *device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create.
 
@@ -1441,7 +1421,7 @@ following parameters:
     This is a pointer to a struct containing the following data:
 
     -   *type*
-        
+
         Denotes the type of notification that was received. Can be one of the following values:
 
         **TOBII_NOTIFICATION_TYPE_CALIBRATION_STATE_CHANGED**
@@ -1472,7 +1452,7 @@ following parameters:
 
     -   *value*
 
-        The attached data described in *value_type*, which is used to access the corresponding data field. This value 
+        The attached data described in *value_type*, which is used to access the corresponding data field. This value
         is guaranteed to be related to the notification its attached to.
 
 
@@ -1490,7 +1470,7 @@ fails, tobii_notifications_subscribe returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
 
-    The *device* or *callback* parameters were passed in as NULL. 
+    The *device* or *callback* parameters were passed in as NULL.
 
 -   **TOBII_ERROR_ALREADY_SUBSCRIBED**
 
@@ -1509,8 +1489,8 @@ fails, tobii_notifications_subscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_notifications_subscribe from within a callback function is not supported.
 
@@ -1523,9 +1503,9 @@ tobii_notifications_unsubscribe(), tobii_device_process_callbacks()
 
 @code{.c}
 
-    #include <tobii/tobii_streams.h>
-    #include <stdio.h>
     #include <assert.h>
+    #include <stdio.h>
+    #include <tobii/tobii_streams.h>
 
     void notifications_callback( tobii_notification_t const* notification, void* user_data )
     {
@@ -1592,7 +1572,6 @@ tobii_notifications_unsubscribe(), tobii_device_process_callbacks()
 
 */
 
-
 /**
 @fn TOBII_API tobii_error_t TOBII_CALL tobii_notifications_unsubscribe( tobii_device_t* device );
 @ingroup tobii_streams
@@ -1637,8 +1616,8 @@ fails, tobii_notifications_unsubscribe returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_notifications_unsubscribe from within a callback function is not supported.
 
@@ -1652,5 +1631,3 @@ tobii_notifications_subscribe()
 See tobii_notifications_subscribe()
 
 */
-
-

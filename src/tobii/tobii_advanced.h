@@ -3,10 +3,10 @@ COPYRIGHT 2015 - PROPERTY OF TOBII AB
 -------------------------------------
 2015 TOBII AB - KARLSROVAGEN 2D, DANDERYD 182 53, SWEDEN - All Rights Reserved.
 
-NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.  
-The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be 
-covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law. 
-Dissemination of this information or reproduction of this material is strictly forbidden unless prior written 
+NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.
+The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be
+covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law.
+Dissemination of this information or reproduction of this material is strictly forbidden unless prior written
 permission is obtained from Tobii AB.
 */
 
@@ -16,78 +16,64 @@ permission is obtained from Tobii AB.
 #include "tobii.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef struct tobii_gaze_data_eye_t
-{
-    tobii_validity_t gaze_origin_validity;
-    float gaze_origin_from_eye_tracker_mm_xyz[ 3 ];
-    float eye_position_in_track_box_normalized_xyz[ 3 ];
+    typedef struct tobii_gaze_data_eye_t
+    {
+        tobii_validity_t gaze_origin_validity;
+        float gaze_origin_from_eye_tracker_mm_xyz[3];
+        float eye_position_in_track_box_normalized_xyz[3];
 
-    tobii_validity_t gaze_point_validity;
-    float gaze_point_from_eye_tracker_mm_xyz[ 3 ];
-    float gaze_point_on_display_normalized_xy[ 2 ];
+        tobii_validity_t gaze_point_validity;
+        float gaze_point_from_eye_tracker_mm_xyz[3];
+        float gaze_point_on_display_normalized_xy[2];
 
-    tobii_validity_t eyeball_center_validity;
-    float eyeball_center_from_eye_tracker_mm_xyz[ 3 ];
+        tobii_validity_t eyeball_center_validity;
+        float eyeball_center_from_eye_tracker_mm_xyz[3];
 
-    tobii_validity_t pupil_validity;
-    float pupil_diameter_mm;
-} tobii_gaze_data_eye_t;
+        tobii_validity_t pupil_validity;
+        float pupil_diameter_mm;
+    } tobii_gaze_data_eye_t;
 
-typedef struct tobii_gaze_data_t
-{
-    int64_t timestamp_tracker_us;
-    int64_t timestamp_system_us;
-    tobii_gaze_data_eye_t left;
-    tobii_gaze_data_eye_t right;
-} tobii_gaze_data_t;
+    typedef struct tobii_gaze_data_t
+    {
+        int64_t timestamp_tracker_us;
+        int64_t timestamp_system_us;
+        tobii_gaze_data_eye_t left;
+        tobii_gaze_data_eye_t right;
+    } tobii_gaze_data_t;
 
-typedef void (*tobii_gaze_data_callback_t)( tobii_gaze_data_t const* gaze_data, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_gaze_data_subscribe( tobii_device_t* device,
-    tobii_gaze_data_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_gaze_data_unsubscribe( tobii_device_t* device );
+    typedef void (*tobii_gaze_data_callback_t)(tobii_gaze_data_t const *gaze_data, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_gaze_data_subscribe(tobii_device_t *device, tobii_gaze_data_callback_t callback, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_gaze_data_unsubscribe(tobii_device_t *device);
 
-typedef void (*tobii_digital_syncport_callback_t)( uint32_t signal, int64_t timestamp_tracker_us,
-    int64_t timestamp_system_us, void* user_data );
+    typedef void (*tobii_digital_syncport_callback_t)(uint32_t signal, int64_t timestamp_tracker_us, int64_t timestamp_system_us, void *user_data);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_digital_syncport_subscribe( tobii_device_t* device,
-    tobii_digital_syncport_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_digital_syncport_unsubscribe( tobii_device_t* device );
+    TOBII_API tobii_error_t TOBII_CALL tobii_digital_syncport_subscribe(tobii_device_t *device, tobii_digital_syncport_callback_t callback, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_digital_syncport_unsubscribe(tobii_device_t *device);
 
-typedef struct tobii_timesync_data_t
-{
-    int64_t system_start_us;
-    int64_t system_end_us;
-    int64_t tracker_us;
-} tobii_timesync_data_t;
+    typedef struct tobii_timesync_data_t
+    {
+        int64_t system_start_us;
+        int64_t system_end_us;
+        int64_t tracker_us;
+    } tobii_timesync_data_t;
 
-TOBII_API tobii_error_t TOBII_CALL tobii_timesync( tobii_device_t* device,
-    tobii_timesync_data_t* timesync );
+    TOBII_API tobii_error_t TOBII_CALL tobii_timesync(tobii_device_t *device, tobii_timesync_data_t *timesync);
 
+    typedef char tobii_illumination_mode_t[64];
+    typedef void (*tobii_illumination_mode_receiver_t)(const tobii_illumination_mode_t illumination_mode, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_illumination_modes(tobii_device_t *device, tobii_illumination_mode_receiver_t receiver, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_set_illumination_mode(tobii_device_t *device, tobii_illumination_mode_t const illumination_mode);
+    TOBII_API tobii_error_t TOBII_CALL tobii_get_illumination_mode(tobii_device_t *device, tobii_illumination_mode_t *illumination_mode);
 
-typedef char tobii_illumination_mode_t[ 64 ];
-typedef void (*tobii_illumination_mode_receiver_t)( const tobii_illumination_mode_t illumination_mode,
-    void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_illumination_modes( tobii_device_t* device,
-    tobii_illumination_mode_receiver_t receiver, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_set_illumination_mode( tobii_device_t* device,
-    tobii_illumination_mode_t const illumination_mode );
-TOBII_API tobii_error_t TOBII_CALL tobii_get_illumination_mode( tobii_device_t* device,
-    tobii_illumination_mode_t* illumination_mode );
-
-typedef char tobii_face_type_t[ 64 ];
-typedef void (*tobii_face_type_receiver_t)( const tobii_face_type_t face_type,
-    void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_face_types( tobii_device_t* device,
-    tobii_face_type_receiver_t receiver, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_set_face_type( tobii_device_t* device,
-    tobii_face_type_t const face_type );
-TOBII_API tobii_error_t TOBII_CALL tobii_get_face_type( tobii_device_t* device,
-    tobii_face_type_t* face_type );
-
-
+    typedef char tobii_face_type_t[64];
+    typedef void (*tobii_face_type_receiver_t)(const tobii_face_type_t face_type, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_face_types(tobii_device_t *device, tobii_face_type_receiver_t receiver, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_set_face_type(tobii_device_t *device, tobii_face_type_t const face_type);
+    TOBII_API tobii_error_t TOBII_CALL tobii_get_face_type(tobii_device_t *device, tobii_face_type_t *face_type);
 
 #ifdef __cplusplus
 }
@@ -154,7 +140,7 @@ should be copied if access is necessary at a later stage, from outside the callb
     the time elapsed between a pair of values.
 
     -   *timestamp_system_us*
-    Timestamp value for when the gaze data was captured, measured in microseconds (us). The epoch is undefined, 
+    Timestamp value for when the gaze data was captured, measured in microseconds (us). The epoch is undefined,
     so these timestamps are only useful for calculating the time elapsed between a pair of values. The function tobii_system_clock
     can be used to retrieve a timestamp using the same clock and same relative values as this timestamp.
 
@@ -170,11 +156,11 @@ should be copied if access is necessary at a later stage, from outside the callb
         measured in millimeters from the center of the device.
 
         -   *gaze_origin_in_track_box_normalized*
-        An array of three floats, for the x, y and z coordinate of the gaze origin point of the eye of the user, as 
+        An array of three floats, for the x, y and z coordinate of the gaze origin point of the eye of the user, as
         measured in the normalized distance of the device track box.
 
         -   *gaze_point_validity*
-        **TOBII_VALIDITY_INVALID** if *gaze_point_from_eye_tracker_mm* and *gaze_point_on_display_normalized* 
+        **TOBII_VALIDITY_INVALID** if *gaze_point_from_eye_tracker_mm* and *gaze_point_on_display_normalized*
         are not valid for this frame, **TOBII_VALIDITY_VALID** if they are.
 
         -   *gaze_point_from_eye_tracker_mm*
@@ -212,7 +198,7 @@ This is the custom pointer sent in when registering the callback.
 
 ### Return value
 
-If the call was successful **TOBII_ERROR_NO_ERROR** will be returned. If the call fails, tobii_gaze_data_subscribe 
+If the call was successful **TOBII_ERROR_NO_ERROR** will be returned. If the call fails, tobii_gaze_data_subscribe
 returns an error code specific to the device.
 
 ### See Also
@@ -260,25 +246,25 @@ tobii_gaze_data_subscribe()
 @code{.c}
 
     #include "tobii/tobii.h"
-    #include "tobii/tobii_licensing.h"
     #include "tobii/tobii_advanced.h"
+    #include "tobii/tobii_licensing.h"
 
-    #include <stdio.h>
     #include <assert.h>
+    #include <stdio.h>
 
     static void tobii_gaze_data_callback(  tobii_gaze_data_t const* gaze_data, void* user_data  )
     {
         (void)user_data;
         if( gaze_data->right.gaze_point_validity == TOBII_VALIDITY_VALID )
-            printf( "Gaze point (right): %f, %f\n", 
-            gaze_data->right.gaze_point_on_display_normalized_xy[ 0 ], 
+            printf( "Gaze point (right): %f, %f\n",
+            gaze_data->right.gaze_point_on_display_normalized_xy[ 0 ],
             gaze_data->right.gaze_point_on_display_normalized_xy[ 1 ] );
         else
             printf( "Gaze point (right): INVALID\n");
 
         if( gaze_data->left.gaze_point_validity == TOBII_VALIDITY_VALID )
-            printf( "Gaze point (left): %f, %f\n", 
-            gaze_data->left.gaze_point_on_display_normalized_xy[ 0 ], 
+            printf( "Gaze point (left): %f, %f\n",
+            gaze_data->left.gaze_point_on_display_normalized_xy[ 0 ],
             gaze_data->left.gaze_point_on_display_normalized_xy[ 1 ] );
         else
             printf( "Gaze point (left): INVALID\n");
@@ -408,8 +394,8 @@ will be returned:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_digital_syncport_subscribe from within a callback function is not supported.
 
@@ -467,8 +453,8 @@ the support
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_digital_syncport_unsubscribe from within a callback function is not supported.
 
@@ -482,11 +468,11 @@ tobii_digital_syncport_subscribe()
 @code{.c}
 
     #include "tobii/tobii.h"
-    #include "tobii/tobii_licensing.h"
     #include "tobii/tobii_advanced.h"
+    #include "tobii/tobii_licensing.h"
 
-    #include <stdio.h>
     #include <assert.h>
+    #include <stdio.h>
 
     static void tobii_digital_syncport_callback( uint32_t signal, int64_t timestamp_tracker_us,
     int64_t timestamp_system_us, void* user_data )

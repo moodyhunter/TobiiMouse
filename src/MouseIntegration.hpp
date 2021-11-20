@@ -1,25 +1,17 @@
-#ifndef MOUSE_INTEGRATION_H
-#define MOUSE_INTEGRATION_H
+#pragma once
 
-#include <tuple>
 #include <QtCore>
-#include "noise_cancellation.h"
+#include <tuple>
 
-#ifdef __linux__
-#include <X11/X.h>
-#include "X11/Xlib.h"
-#include <X11/extensions/XTest.h>
-#include <X11/extensions/Xrandr.h>
-#elif _WIN32
+#ifdef _WIN32
 #include <windows.h>
 #include <winuser.h>
-#else
-#error "Unknown Operating System..."
 #endif
 
-//using namespace std;
+// using namespace std;
 
-enum MOUSEWORKINGMODE_E {
+enum MOUSEWORKINGMODE_E
+{
     TOBII_MOUSE_MODE_MOVE_ABSOLUTE,
     TOBII_MOUSE_MODE_MOVE_RELATIVE,
     TOBII_MOUSE_MODE_MOVE_BY_SECTIONS
@@ -44,6 +36,4 @@ namespace MouseIntegration
     int CALLBACK EnumMonitors_CALLBACK(HMONITOR a, HDC b, LPRECT c, LPARAM d);
 #endif
 
-};
-
-#endif // MOUSE_INTEGRATION_H
+}; // namespace MouseIntegration

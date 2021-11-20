@@ -3,10 +3,10 @@ COPYRIGHT 2015 - PROPERTY OF TOBII AB
 -------------------------------------
 2015 TOBII AB - KARLSROVAGEN 2D, DANDERYD 182 53, SWEDEN - All Rights Reserved.
 
-NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.  
-The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be 
-covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law. 
-Dissemination of this information or reproduction of this material is strictly forbidden unless prior written 
+NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.
+The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be
+covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law.
+Dissemination of this information or reproduction of this material is strictly forbidden unless prior written
 permission is obtained from Tobii AB.
 */
 
@@ -16,63 +16,59 @@ permission is obtained from Tobii AB.
 #include "tobii.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
+    TOBII_API tobii_error_t TOBII_CALL tobii_engine_create(tobii_api_t *api, tobii_engine_t **engine);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_engine_create( tobii_api_t* api, tobii_engine_t** engine );
+    TOBII_API tobii_error_t TOBII_CALL tobii_engine_destroy(tobii_engine_t *engine);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_engine_destroy( tobii_engine_t* engine );
+    TOBII_API tobii_error_t TOBII_CALL tobii_engine_reconnect(tobii_engine_t *engine);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_engine_reconnect( tobii_engine_t* engine );
+    TOBII_API tobii_error_t TOBII_CALL tobii_engine_process_callbacks(tobii_engine_t *engine);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_engine_process_callbacks( tobii_engine_t* engine );
+    TOBII_API tobii_error_t TOBII_CALL tobii_engine_clear_callback_buffers(tobii_engine_t *engine);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_engine_clear_callback_buffers( tobii_engine_t* engine );
+    typedef enum tobii_device_readiness_t
+    {
+        TOBII_DEVICE_READINESS_WAITING_FOR_FIRMWARE_UPGRADE,
+        TOBII_DEVICE_READINESS_UPGRADING_FIRMWARE,
+        TOBII_DEVICE_READINESS_WAITING_FOR_DISPLAY_AREA,
+        TOBII_DEVICE_READINESS_WAITING_FOR_CALIBRATION,
+        TOBII_DEVICE_READINESS_CALIBRATING,
+        TOBII_DEVICE_READINESS_READY,
+        TOBII_DEVICE_READINESS_PAUSED,
+        TOBII_DEVICE_READINESS_MALFUNCTIONING,
+    } tobii_device_readiness_t;
 
+    typedef struct tobii_enumerated_device_t
+    {
+        char url[256];
+        char serial_number[128];
+        char model[64];
+        char generation[64];
+        char firmware_version[128];
+        char integration[120];
+        tobii_device_readiness_t readiness;
+    } tobii_enumerated_device_t;
 
-typedef enum tobii_device_readiness_t
-{
-    TOBII_DEVICE_READINESS_WAITING_FOR_FIRMWARE_UPGRADE,
-    TOBII_DEVICE_READINESS_UPGRADING_FIRMWARE,
-    TOBII_DEVICE_READINESS_WAITING_FOR_DISPLAY_AREA,
-    TOBII_DEVICE_READINESS_WAITING_FOR_CALIBRATION,
-    TOBII_DEVICE_READINESS_CALIBRATING,
-    TOBII_DEVICE_READINESS_READY,
-    TOBII_DEVICE_READINESS_PAUSED,
-    TOBII_DEVICE_READINESS_MALFUNCTIONING,
-} tobii_device_readiness_t;
+    typedef void (*tobii_enumerated_device_receiver_t)(tobii_enumerated_device_t const *enumerated_device, void *user_data);
 
-typedef struct tobii_enumerated_device_t
-{
-    char url[ 256 ];
-    char serial_number[ 128 ];
-    char model[ 64 ];
-    char generation[ 64 ];
-    char firmware_version[ 128 ];
-    char integration[ 120 ];
-    tobii_device_readiness_t readiness;
-} tobii_enumerated_device_t;
+    TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_devices(tobii_engine_t *engine, tobii_enumerated_device_receiver_t receiver, void *user_data);
 
-typedef void( *tobii_enumerated_device_receiver_t )( tobii_enumerated_device_t const* enumerated_device,
-    void* user_data );
+    typedef enum tobii_device_list_change_type_t
+    {
+        TOBII_DEVICE_LIST_CHANGE_TYPE_ADDED,
+        TOBII_DEVICE_LIST_CHANGE_TYPE_REMOVED,
+        TOBII_DEVICE_LIST_CHANGE_TYPE_CHANGED
+    } tobii_device_list_change_type_t;
 
-TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_devices( tobii_engine_t* engine,
-    tobii_enumerated_device_receiver_t receiver, void* user_data );
+    typedef void (*tobii_device_list_change_callback_t)(char const *url, tobii_device_list_change_type_t type, tobii_device_readiness_t readiness, int64_t timestamp_us,
+                                                        void *user_data);
 
-typedef enum tobii_device_list_change_type_t
-{
-    TOBII_DEVICE_LIST_CHANGE_TYPE_ADDED,
-    TOBII_DEVICE_LIST_CHANGE_TYPE_REMOVED,
-    TOBII_DEVICE_LIST_CHANGE_TYPE_CHANGED
-} tobii_device_list_change_type_t;
-
-typedef void( *tobii_device_list_change_callback_t )( char const* url, tobii_device_list_change_type_t type,
-    tobii_device_readiness_t readiness, int64_t timestamp_us, void* user_data );
-
-TOBII_API tobii_error_t TOBII_CALL tobii_device_list_change_subscribe( tobii_engine_t* engine,
-    tobii_device_list_change_callback_t callback, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_device_list_change_unsubscribe( tobii_engine_t* engine );
+    TOBII_API tobii_error_t TOBII_CALL tobii_device_list_change_subscribe(tobii_engine_t *engine, tobii_device_list_change_callback_t callback, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_device_list_change_unsubscribe(tobii_engine_t *engine);
 
 #ifdef __cplusplus
 }
@@ -164,10 +160,10 @@ tobii_engine_destroy(), tobii_api_create()
 
 @code{.c}
 
+    #include <assert.h>
+    #include <stdio.h>
     #include <tobii/tobii.h>
     #include <tobii/tobii_engine.h>
-    #include <stdio.h>
-    #include <assert.h>
 
     void device_list_change_callback( char const* url, tobii_device_list_change_type_t type,
         tobii_device_readiness_t readiness, int64_t timestamp_us, void* user_data )
@@ -412,10 +408,10 @@ tobii_wait_for_callbacks(), tobii_engine_clear_callback_buffers(), tobii_engine_
 
 @code{.c}
 
+    #include <assert.h>
+    #include <stdio.h>
     #include <tobii/tobii.h>
     #include <tobii/tobii_engine.h>
-    #include <stdio.h>
-    #include <assert.h>
 
     int main()
     {
@@ -617,10 +613,10 @@ tobii_engine_create(), tobii_device_list_change_subscribe()
 
 @code{.c}
 
+    #include <assert.h>
+    #include <stdio.h>
     #include <tobii/tobii.h>
     #include <tobii/tobii_engine.h>
-    #include <stdio.h>
-    #include <assert.h>
 
     void enumerated_device_receiver( tobii_enumerated_device_t const* enumerated_device, void* user_data )
     {

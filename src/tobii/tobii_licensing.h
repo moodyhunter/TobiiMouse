@@ -3,10 +3,10 @@ COPYRIGHT 2015 - PROPERTY OF TOBII AB
 -------------------------------------
 2015 TOBII AB - KARLSROVAGEN 2D, DANDERYD 182 53, SWEDEN - All Rights Reserved.
 
-NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.  
-The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be 
-covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law. 
-Dissemination of this information or reproduction of this material is strictly forbidden unless prior written 
+NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.
+The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be
+covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law.
+Dissemination of this information or reproduction of this material is strictly forbidden unless prior written
 permission is obtained from Tobii AB.
 */
 
@@ -16,50 +16,45 @@ permission is obtained from Tobii AB.
 #include "tobii.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef struct tobii_license_key_t
-{
-    uint16_t const* license_key;
-    size_t size_in_bytes;
-} tobii_license_key_t;
+    typedef struct tobii_license_key_t
+    {
+        uint16_t const *license_key;
+        size_t size_in_bytes;
+    } tobii_license_key_t;
 
-typedef enum tobii_license_validation_result_t
-{
-    TOBII_LICENSE_VALIDATION_RESULT_OK,
-    TOBII_LICENSE_VALIDATION_RESULT_TAMPERED,
-    TOBII_LICENSE_VALIDATION_RESULT_INVALID_APPLICATION_SIGNATURE,
-    TOBII_LICENSE_VALIDATION_RESULT_NONSIGNED_APPLICATION,
-    TOBII_LICENSE_VALIDATION_RESULT_EXPIRED,
-    TOBII_LICENSE_VALIDATION_RESULT_PREMATURE,
-    TOBII_LICENSE_VALIDATION_RESULT_INVALID_PROCESS_NAME,
-    TOBII_LICENSE_VALIDATION_RESULT_INVALID_SERIAL_NUMBER,
-    TOBII_LICENSE_VALIDATION_RESULT_INVALID_MODEL,
-} tobii_license_validation_result_t;
+    typedef enum tobii_license_validation_result_t
+    {
+        TOBII_LICENSE_VALIDATION_RESULT_OK,
+        TOBII_LICENSE_VALIDATION_RESULT_TAMPERED,
+        TOBII_LICENSE_VALIDATION_RESULT_INVALID_APPLICATION_SIGNATURE,
+        TOBII_LICENSE_VALIDATION_RESULT_NONSIGNED_APPLICATION,
+        TOBII_LICENSE_VALIDATION_RESULT_EXPIRED,
+        TOBII_LICENSE_VALIDATION_RESULT_PREMATURE,
+        TOBII_LICENSE_VALIDATION_RESULT_INVALID_PROCESS_NAME,
+        TOBII_LICENSE_VALIDATION_RESULT_INVALID_SERIAL_NUMBER,
+        TOBII_LICENSE_VALIDATION_RESULT_INVALID_MODEL,
+    } tobii_license_validation_result_t;
 
-TOBII_API tobii_error_t TOBII_CALL tobii_device_create_ex( tobii_api_t* api, char const* url,
-    tobii_license_key_t const* license_keys, int license_count, tobii_license_validation_result_t* license_results,
-    tobii_device_t** device );
+    TOBII_API tobii_error_t TOBII_CALL tobii_device_create_ex(tobii_api_t *api, char const *url, tobii_license_key_t const *license_keys, int license_count,
+                                                              tobii_license_validation_result_t *license_results, tobii_device_t **device);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_license_key_store( tobii_device_t* device,
-    void* data, size_t size );
-TOBII_API tobii_error_t TOBII_CALL tobii_license_key_retrieve( tobii_device_t* device,
-    tobii_data_receiver_t receiver, void* user_data );
+    TOBII_API tobii_error_t TOBII_CALL tobii_license_key_store(tobii_device_t *device, void *data, size_t size);
+    TOBII_API tobii_error_t TOBII_CALL tobii_license_key_retrieve(tobii_device_t *device, tobii_data_receiver_t receiver, void *user_data);
 
-typedef enum tobii_feature_group_t
-{
-    TOBII_FEATURE_GROUP_BLOCKED,
-    TOBII_FEATURE_GROUP_CONSUMER,
-    TOBII_FEATURE_GROUP_CONFIG,
-    TOBII_FEATURE_GROUP_PROFESSIONAL,
-    TOBII_FEATURE_GROUP_INTERNAL,
-} tobii_feature_group_t;
+    typedef enum tobii_feature_group_t
+    {
+        TOBII_FEATURE_GROUP_BLOCKED,
+        TOBII_FEATURE_GROUP_CONSUMER,
+        TOBII_FEATURE_GROUP_CONFIG,
+        TOBII_FEATURE_GROUP_PROFESSIONAL,
+        TOBII_FEATURE_GROUP_INTERNAL,
+    } tobii_feature_group_t;
 
-
-TOBII_API tobii_error_t TOBII_CALL tobii_get_feature_group( tobii_device_t* device,
-    tobii_feature_group_t* feature_group );
-
+    TOBII_API tobii_error_t TOBII_CALL tobii_get_feature_group(tobii_device_t *device, tobii_feature_group_t *feature_group);
 
 #ifdef __cplusplus
 }
@@ -76,9 +71,9 @@ tobii_licensing.h
 This is the tobii_licensing.h file.
 */
 
-
 /**
-@fn TOBII_API tobii_error_t TOBII_CALL tobii_device_create_ex( tobii_api_t* api, char const* url, tobii_license_key_t const* license_keys, int license_count, tobii_license_validation_result_t* license_results, tobii_device_t** device );
+@fn TOBII_API tobii_error_t TOBII_CALL tobii_device_create_ex( tobii_api_t* api, char const* url, tobii_license_key_t const* license_keys, int license_count,
+tobii_license_validation_result_t* license_results, tobii_device_t** device );
 @ingroup tobii_licensing
 
 tobii_device_create_ex
@@ -180,8 +175,8 @@ tobii_device_create returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_device_create_ex from within a callback function is not supported.
 
@@ -236,10 +231,10 @@ tobii_get_feature_group() tobii_device_create()
     #include "tobii/tobii.h"
     #include "tobii/tobii_licensing.h"
 
-    #include <stdio.h>
+    #include <assert.h>
     #include <malloc.h>
     #include <memory.h>
-    #include <assert.h>
+    #include <stdio.h>
 
     static size_t read_license_file( uint16_t* license )
     {
@@ -384,8 +379,8 @@ tobii_device_create returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_license_key_store from within a callback function is not supported.
 
@@ -399,10 +394,10 @@ tobii_license_key_retrieve(), tobii_device_create()
 
     #include "tobii/tobii_licensing.h"
 
-    #include <stdio.h>
+    #include <assert.h>
     #include <malloc.h>
     #include <memory.h>
-    #include <assert.h>
+    #include <stdio.h>
 
     static size_t read_license_file( uint16_t* license )
     {
@@ -510,7 +505,6 @@ tobii_license_key_retrieve(), tobii_device_create()
 
 */
 
-
 /**
 @fn TOBII_API tobii_error_t TOBII_CALL tobii_license_key_retrieve( tobii_device_t* device, tobii_data_receiver_t receiver, void* user_data );
 @ingroup tobii_licensing
@@ -591,8 +585,8 @@ tobii_device_create returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_license_key_retrieve from within a callback function is not supported.
 
@@ -606,10 +600,10 @@ tobii_license_key_retrieve(), tobii_device_create()
 
     #include "tobii/tobii_licensing.h"
 
-    #include <stdio.h>
+    #include <assert.h>
     #include <malloc.h>
     #include <memory.h>
-    #include <assert.h>
+    #include <stdio.h>
 
     static size_t read_license_file( uint16_t* license )
     {
@@ -795,8 +789,8 @@ fails, tobii_get_feature_group returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
-    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(), 
+    The function failed because it was called from within a callback triggered from an API call such as
+    tobii_device_process_callbacks(), tobii_calibration_retrieve(), tobii_enumerate_illumination_modes(),
     or tobii_license_key_retrieve().
     Calling tobii_get_feature_group from within a callback function is not supported.
 
@@ -808,9 +802,9 @@ tobii_device_create()
 ### Example
 @code{.c}
 
-    #include <tobii/tobii_licensing.h>
-    #include <stdio.h>
     #include <assert.h>
+    #include <stdio.h>
+    #include <tobii/tobii_licensing.h>
 
     static void url_receiver( char const* url, void* user_data )
     {
@@ -853,4 +847,3 @@ tobii_device_create()
 @endcode
 
 */
-

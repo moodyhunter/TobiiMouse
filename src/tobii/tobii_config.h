@@ -3,10 +3,10 @@ COPYRIGHT 2015 - PROPERTY OF TOBII AB
 -------------------------------------
 2015 TOBII AB - KARLSROVAGEN 2D, DANDERYD 182 53, SWEDEN - All Rights Reserved.
 
-NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.  
-The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be 
-covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law. 
-Dissemination of this information or reproduction of this material is strictly forbidden unless prior written 
+NOTICE:  All information contained herein is, and remains, the property of Tobii AB and its suppliers, if any.
+The intellectual and technical concepts contained herein are proprietary to Tobii AB and its suppliers and may be
+covered by U.S.and Foreign Patents, patent applications, and are protected by trade secret or copyright law.
+Dissemination of this information or reproduction of this material is strictly forbidden unless prior written
 permission is obtained from Tobii AB.
 */
 
@@ -16,91 +16,71 @@ permission is obtained from Tobii AB.
 #include "tobii.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef enum tobii_calibration_point_status_t
-{
-    TOBII_CALIBRATION_POINT_STATUS_FAILED_OR_INVALID,
-    TOBII_CALIBRATION_POINT_STATUS_VALID_BUT_NOT_USED_IN_CALIBRATION,
-    TOBII_CALIBRATION_POINT_STATUS_VALID_AND_USED_IN_CALIBRATION,
-} tobii_calibration_point_status_t;
+    typedef enum tobii_calibration_point_status_t
+    {
+        TOBII_CALIBRATION_POINT_STATUS_FAILED_OR_INVALID,
+        TOBII_CALIBRATION_POINT_STATUS_VALID_BUT_NOT_USED_IN_CALIBRATION,
+        TOBII_CALIBRATION_POINT_STATUS_VALID_AND_USED_IN_CALIBRATION,
+    } tobii_calibration_point_status_t;
 
-typedef struct tobii_calibration_point_data_t
-{
-    float point_xy[ 2 ];
+    typedef struct tobii_calibration_point_data_t
+    {
+        float point_xy[2];
 
-    tobii_calibration_point_status_t left_status;
-    float left_mapping_xy[ 2 ];
+        tobii_calibration_point_status_t left_status;
+        float left_mapping_xy[2];
 
-    tobii_calibration_point_status_t right_status;
-    float right_mapping_xy[ 2 ];
-} tobii_calibration_point_data_t;
+        tobii_calibration_point_status_t right_status;
+        float right_mapping_xy[2];
+    } tobii_calibration_point_data_t;
 
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_start(tobii_device_t *device, tobii_enabled_eye_t enabled_eye);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_stop(tobii_device_t *device);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_collect_data_2d(tobii_device_t *device, float x, float y);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_collect_data_3d(tobii_device_t *device, float x, float y, float z);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_collect_data_per_eye_2d(tobii_device_t *device, float x, float y, tobii_enabled_eye_t requested_eyes,
+                                                                                 tobii_enabled_eye_t *collected_eyes);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_discard_data_2d(tobii_device_t *device, float x, float y);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_discard_data_3d(tobii_device_t *device, float x, float y, float z);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_discard_data_per_eye_2d(tobii_device_t *device, float x, float y, tobii_enabled_eye_t eyes);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_clear(tobii_device_t *device);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_compute_and_apply(tobii_device_t *device);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_compute_and_apply_per_eye(tobii_device_t *device, tobii_enabled_eye_t *calibrated_eyes);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_retrieve(tobii_device_t *device, tobii_data_receiver_t receiver, void *user_data);
+    typedef void (*tobii_calibration_point_data_receiver_t)(tobii_calibration_point_data_t const *point_data, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_parse(tobii_api_t *api, void const *data, size_t data_size, tobii_calibration_point_data_receiver_t receiver,
+                                                               void *user_data);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_start( tobii_device_t* device, tobii_enabled_eye_t enabled_eye );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_stop( tobii_device_t* device );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_collect_data_2d( tobii_device_t* device,
-    float x, float y );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_collect_data_3d( tobii_device_t* device,
-    float x, float y, float z );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_collect_data_per_eye_2d( tobii_device_t* device,
-    float x, float y, tobii_enabled_eye_t requested_eyes, tobii_enabled_eye_t* collected_eyes );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_discard_data_2d( tobii_device_t* device,
-    float x, float y );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_discard_data_3d( tobii_device_t* device,
-    float x, float y, float z );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_discard_data_per_eye_2d( tobii_device_t* device,
-    float x, float y, tobii_enabled_eye_t eyes );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_clear( tobii_device_t* device );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_compute_and_apply( tobii_device_t* device );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_compute_and_apply_per_eye( tobii_device_t* device, 
-    tobii_enabled_eye_t* calibrated_eyes );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_retrieve( tobii_device_t* device,
-    tobii_data_receiver_t receiver, void* user_data );
-typedef void (*tobii_calibration_point_data_receiver_t)( tobii_calibration_point_data_t const* point_data, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_parse( tobii_api_t* api, void const* data, size_t data_size,
-    tobii_calibration_point_data_receiver_t receiver, void* user_data );
+    TOBII_API tobii_error_t TOBII_CALL tobii_calibration_apply(tobii_device_t *device, void const *data, size_t size);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_calibration_apply( tobii_device_t* device,
-    void const* data, size_t size );
+    typedef struct tobii_geometry_mounting_t
+    {
+        int guides;
+        float width_mm;
+        float angle_deg;
+        float external_offset_mm_xyz[3];
+        float internal_offset_mm_xyz[3];
+    } tobii_geometry_mounting_t;
 
+    TOBII_API tobii_error_t TOBII_CALL tobii_get_geometry_mounting(tobii_device_t *device, tobii_geometry_mounting_t *geometry_mounting);
 
-typedef struct tobii_geometry_mounting_t
-{
-    int guides;
-    float width_mm;
-    float angle_deg;
-    float external_offset_mm_xyz[ 3 ];
-    float internal_offset_mm_xyz[ 3 ];
-} tobii_geometry_mounting_t;
+    TOBII_API tobii_error_t TOBII_CALL tobii_get_display_area(tobii_device_t *device, tobii_display_area_t *display_area);
+    TOBII_API tobii_error_t TOBII_CALL tobii_set_display_area(tobii_device_t *device, tobii_display_area_t const *display_area);
+    TOBII_API tobii_error_t TOBII_CALL tobii_calculate_display_area_basic(tobii_api_t *api, float width_mm, float height_mm, float offset_x_mm,
+                                                                          tobii_geometry_mounting_t const *geometry_mounting, tobii_display_area_t *display_area);
 
-TOBII_API tobii_error_t TOBII_CALL tobii_get_geometry_mounting( tobii_device_t* device,
-    tobii_geometry_mounting_t* geometry_mounting );
+    typedef char tobii_device_name_t[64];
+    TOBII_API tobii_error_t TOBII_CALL tobii_get_device_name(tobii_device_t *device, tobii_device_name_t *device_name);
+    TOBII_API tobii_error_t TOBII_CALL tobii_set_device_name(tobii_device_t *device, tobii_device_name_t const device_name);
 
-
-TOBII_API tobii_error_t TOBII_CALL tobii_get_display_area( tobii_device_t* device,
-    tobii_display_area_t* display_area );
-TOBII_API tobii_error_t TOBII_CALL tobii_set_display_area( tobii_device_t* device,
-    tobii_display_area_t const* display_area );
-TOBII_API tobii_error_t TOBII_CALL tobii_calculate_display_area_basic( tobii_api_t* api,
-    float width_mm, float height_mm, float offset_x_mm, tobii_geometry_mounting_t const* geometry_mounting,
-    tobii_display_area_t* display_area );
-
-typedef char tobii_device_name_t[ 64 ];
-TOBII_API tobii_error_t TOBII_CALL tobii_get_device_name( tobii_device_t* device,
-    tobii_device_name_t* device_name );
-TOBII_API tobii_error_t TOBII_CALL tobii_set_device_name( tobii_device_t* device,
-    tobii_device_name_t const device_name );
-
-typedef void (*tobii_output_frequency_receiver_t)( float output_frequency, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_output_frequencies( tobii_device_t* device,
-    tobii_output_frequency_receiver_t receiver, void* user_data );
-TOBII_API tobii_error_t TOBII_CALL tobii_set_output_frequency( tobii_device_t* device,
-    float output_frequency );
-TOBII_API tobii_error_t TOBII_CALL tobii_get_output_frequency( tobii_device_t* device,
-    float* output_frequency );
-
+    typedef void (*tobii_output_frequency_receiver_t)(float output_frequency, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_enumerate_output_frequencies(tobii_device_t *device, tobii_output_frequency_receiver_t receiver, void *user_data);
+    TOBII_API tobii_error_t TOBII_CALL tobii_set_output_frequency(tobii_device_t *device, float output_frequency);
+    TOBII_API tobii_error_t TOBII_CALL tobii_get_output_frequency(tobii_device_t *device, float *output_frequency);
 
 #ifdef __cplusplus
 }
@@ -137,7 +117,7 @@ Starts a calibration, placing the tracker in a state ready to receive data colle
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_start( tobii_device_t* device, 
+    tobii_error_t tobii_calibration_start( tobii_device_t* device,
         tobii_enabled_eye_t enabled_eye );
 
 
@@ -151,7 +131,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_calibration_start returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_start returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_start returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -160,7 +140,7 @@ tobii_calibration_start returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_start from within a callback function is not supported.
 
@@ -179,7 +159,7 @@ tobii_calibration_start returns one of the following:
 
 -   **TOBII_ERROR_CALIBRATION_BUSY**
 
-    Another client is already calibrating the device. Only one calibration can be running at a time, across all 
+    Another client is already calibrating the device. Only one calibration can be running at a time, across all
     connected clients.
 
 -   **TOBII_ERROR_INTERNAL**
@@ -190,10 +170,10 @@ tobii_calibration_start returns one of the following:
 -   **TOBII_ERROR_NOT_SUPPORTED**
 
     A value other than TOBII_ENABLED_EYE_BOTH was passed for the *enabled_eye* parameter.
-    
+
 ### See also
 
-tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -233,7 +213,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_calibration_stop returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_stop returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_stop returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -242,7 +222,7 @@ tobii_calibration_stop returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_stop from within a callback function is not supported.
 
@@ -266,7 +246,7 @@ tobii_calibration_stop returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -295,7 +275,7 @@ Performs data collection for the specified screen coordinate.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_collect_data_2d( tobii_device_t* device, 
+    tobii_error_t tobii_calibration_collect_data_2d( tobii_device_t* device,
         float x, float y );
 
 
@@ -311,7 +291,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_calibration_collect_data_2d returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_collect_data_2d returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_collect_data_2d returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -320,7 +300,7 @@ tobii_calibration_collect_data_2d returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_collect_data_2d from within a callback function is not supported.
 
@@ -335,7 +315,7 @@ tobii_calibration_collect_data_2d returns one of the following:
 -   **TOBII_ERROR_CALIBRATION_NOT_STARTED**
 
     A successful call to tobii_calibration_start has not been made before calling this function.
-    
+
 -   **TOBII_ERROR_OPERATION_FAILED**
 
     The tracker failed to collect a sufficient amount of data. It is recommended to performing the operation again.
@@ -348,7 +328,7 @@ tobii_calibration_collect_data_2d returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), 
+tobii_calibration_start(), tobii_calibration_stop(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -385,7 +365,7 @@ Performs data collection for the specified 3d coordinate.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_collect_data_3d( tobii_device_t* device, 
+    tobii_error_t tobii_calibration_collect_data_3d( tobii_device_t* device,
         float x, float y, float z );
 
 
@@ -404,7 +384,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_calibration_collect_data_3d returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_collect_data_3d returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_collect_data_3d returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -413,7 +393,7 @@ tobii_calibration_collect_data_3d returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_collect_data_3d from within a callback function is not supported.
 
@@ -428,7 +408,7 @@ tobii_calibration_collect_data_3d returns one of the following:
 -   **TOBII_ERROR_CALIBRATION_NOT_STARTED**
 
     A successful call to tobii_calibration_start has not been made before calling this function.
-    
+
 -   **TOBII_ERROR_OPERATION_FAILED**
 
     The tracker failed to collect a sufficient amount of data. It is recommended to performing the operation again.
@@ -440,7 +420,7 @@ tobii_calibration_collect_data_3d returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -463,7 +443,8 @@ tobii_calibration_parse(), tobii_calibration_apply()
 */
 
 /**
-@fn TOBII_API tobii_error_t TOBII_CALL tobii_calibration_collect_data_per_eye_2d( tobii_device_t* device, float x, float y, tobii_enabled_eye_t requested_eyes, tobii_enabled_eye_t* collected_eyes );
+@fn TOBII_API tobii_error_t TOBII_CALL tobii_calibration_collect_data_per_eye_2d( tobii_device_t* device, float x, float y, tobii_enabled_eye_t requested_eyes,
+tobii_enabled_eye_t* collected_eyes );
 @ingroup tobii_config
 
 tobii_calibration_collect_data_per_eye_2d
@@ -477,8 +458,8 @@ Performs data collection for the specified screen coordinate, for the left, righ
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_collect_data_per_eye_2d( tobii_device_t* device, 
-        float x, float y, tobii_enabled_eye_t requested_eyes, 
+    tobii_error_t tobii_calibration_collect_data_per_eye_2d( tobii_device_t* device,
+        float x, float y, tobii_enabled_eye_t requested_eyes,
         tobii_enabled_eye_t* collected_eyes );
 
 
@@ -495,7 +476,7 @@ TBD - Documentation needs to be written for this function
 *requested_eyes* specifies wich eye to collect data for: **TOBII_ENABLED_EYE_LEFT**, **TOBII_ENABLED_EYE_RIGHT** or
 **TOBII_ENABLED_EYE_BOTH**
 
-*collected_eyes* reports back which eye data was successfully collected for: **TOBII_ENABLED_EYE_LEFT**, 
+*collected_eyes* reports back which eye data was successfully collected for: **TOBII_ENABLED_EYE_LEFT**,
 **TOBII_ENABLED_EYE_RIGHT** or **TOBII_ENABLED_EYE_BOTH**
 
 
@@ -510,7 +491,7 @@ fails, tobii_calibration_collect_data_per_eye_2d returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_collect_data_per_eye_2d from within a callback function is not supported.
 
@@ -525,7 +506,7 @@ fails, tobii_calibration_collect_data_per_eye_2d returns one of the following:
 -   **TOBII_ERROR_CALIBRATION_NOT_STARTED**
 
     A successful call to tobii_calibration_start has not been made before calling this function.
-    
+
 -   **TOBII_ERROR_OPERATION_FAILED**
 
     The tracker failed to collect a sufficient amount of data. It is recommended to performing the operation again.
@@ -542,7 +523,7 @@ fails, tobii_calibration_collect_data_per_eye_2d returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -579,7 +560,7 @@ Discards all data collected for the specified screen coordinate.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_discard_data_2d( tobii_device_t* device, 
+    tobii_error_t tobii_calibration_discard_data_2d( tobii_device_t* device,
         float x, float y );
 
 
@@ -589,16 +570,16 @@ TBD - Documentation needs to be written for this function
 
 *device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create.
 
-*x* the x-coordinate (horizontal) of the point to discard data for, as specified in a prior call to 
+*x* the x-coordinate (horizontal) of the point to discard data for, as specified in a prior call to
 tobii_calibration_collect_data_2d.
 
-*y* the y-coordinate (vertical) of the point to discard data for, as specified in a prior call to 
+*y* the y-coordinate (vertical) of the point to discard data for, as specified in a prior call to
 tobii_calibration_collect_data_2d.
 
 
 ### Return value
 
-If the operation is successful, tobii_calibration_discard_data_2d returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_discard_data_2d returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_discard_data_2d returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -607,7 +588,7 @@ tobii_calibration_discard_data_2d returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_discard_data_2d from within a callback function is not supported.
 
@@ -622,7 +603,7 @@ tobii_calibration_discard_data_2d returns one of the following:
 -   **TOBII_ERROR_CALIBRATION_NOT_STARTED**
 
     A successful call to tobii_calibration_start has not been made before calling this function.
-    
+
 -   **TOBII_ERROR_INTERNAL**
 
     Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
@@ -631,8 +612,8 @@ tobii_calibration_discard_data_2d returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
-tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
+tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
 tobii_calibration_parse(), tobii_calibration_apply()
@@ -659,7 +640,7 @@ Discards all data collected for the specified 3d coordinate.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_discard_data_3d( tobii_device_t* device, 
+    tobii_error_t tobii_calibration_discard_data_3d( tobii_device_t* device,
         float x, float y, float z );
 
 
@@ -669,19 +650,19 @@ TBD - Documentation needs to be written for this function
 
 *device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create.
 
-*x* the x-coordinate (horizontal) of the point to discard data for, as specified in a prior call to 
+*x* the x-coordinate (horizontal) of the point to discard data for, as specified in a prior call to
 tobii_calibration_collect_data_3d.
 
-*y* the y-coordinate (vertical) of the point to discard data for, as specified in a prior call to 
+*y* the y-coordinate (vertical) of the point to discard data for, as specified in a prior call to
 tobii_calibration_collect_data_3d.
 
-*z* the z-coordinate (depth) of the point to discard data for, as specified in a prior call to 
+*z* the z-coordinate (depth) of the point to discard data for, as specified in a prior call to
 tobii_calibration_collect_data_3d.
 
 
 ### Return value
 
-If the operation is successful, tobii_calibration_discard_data_3d returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_discard_data_3d returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_discard_data_3d returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -690,7 +671,7 @@ tobii_calibration_discard_data_3d returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_discard_data_3d from within a callback function is not supported.
 
@@ -705,7 +686,7 @@ tobii_calibration_discard_data_3d returns one of the following:
 -   **TOBII_ERROR_CALIBRATION_NOT_STARTED**
 
     A successful call to tobii_calibration_start has not been made before calling this function.
-    
+
 -   **TOBII_ERROR_INTERNAL**
 
     Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
@@ -714,7 +695,7 @@ tobii_calibration_discard_data_3d returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -742,7 +723,7 @@ Discards all data collected by a corresponding call to tobii_calibration_collect
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_discard_data_per_eye_2d( tobii_device_t* device, 
+    tobii_error_t tobii_calibration_discard_data_per_eye_2d( tobii_device_t* device,
         float x, float y, tobii_enabled_eye_t eyes );
 
 
@@ -752,20 +733,20 @@ TBD - Documentation needs to be written for this function
 
 *device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create.
 
-*x* the x-coordinate (horizontal) of the point to discard data for, as specified in a prior call to 
+*x* the x-coordinate (horizontal) of the point to discard data for, as specified in a prior call to
 tobii_calibration_collect_data_per_eye_2d.
 
-*y* the y-coordinate (vertical) of the point to discard data for, as specified in a prior call to 
+*y* the y-coordinate (vertical) of the point to discard data for, as specified in a prior call to
 tobii_calibration_collect_data_per_eye_2d.
 
 *eyes* specifies wich eye to discard data for: **TOBII_ENABLED_EYE_LEFT**, **TOBII_ENABLED_EYE_RIGHT** or
-**TOBII_ENABLED_EYE_BOTH**, which should match the value passed in the corresonding 
+**TOBII_ENABLED_EYE_BOTH**, which should match the value passed in the corresonding
 tobii_calibration_collect_data_per_eye_2d call.
 
 
 ### Return value
 
-If the operation is successful, tobii_calibration_discard_data_per_eye_2d returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_discard_data_per_eye_2d returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_discard_data_per_eye_2d returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -774,7 +755,7 @@ tobii_calibration_discard_data_per_eye_2d returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_discard_data_per_eye_2d from within a callback function is not supported.
 
@@ -789,7 +770,7 @@ tobii_calibration_discard_data_per_eye_2d returns one of the following:
 -   **TOBII_ERROR_CALIBRATION_NOT_STARTED**
 
     A successful call to tobii_calibration_start has not been made before calling this function.
-    
+
 -   **TOBII_ERROR_INTERNAL**
 
     Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
@@ -802,7 +783,7 @@ tobii_calibration_discard_data_per_eye_2d returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -842,7 +823,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_calibration_clear returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_clear returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_clear returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -851,7 +832,7 @@ tobii_calibration_clear returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_clear from within a callback function is not supported.
 
@@ -866,7 +847,7 @@ tobii_calibration_clear returns one of the following:
 -   **TOBII_ERROR_CALIBRATION_NOT_STARTED**
 
     A successful call to tobii_calibration_start has not been made before calling this function.
-    
+
 -   **TOBII_ERROR_INTERNAL**
 
     Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
@@ -875,9 +856,9 @@ tobii_calibration_clear returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
-tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), 
+tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
 tobii_calibration_parse(), tobii_calibration_apply()
 
@@ -925,7 +906,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_calibration_compute_and_apply returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_compute_and_apply returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_compute_and_apply returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -934,7 +915,7 @@ tobii_calibration_compute_and_apply returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_compute_and_apply from within a callback function is not supported.
 
@@ -953,7 +934,7 @@ tobii_calibration_compute_and_apply returns one of the following:
 -   **TOBII_ERROR_OPERATION_FAILED**
 
     Not enough data collected to compute calibration.
-    
+
 -   **TOBII_ERROR_INTERNAL**
 
     Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
@@ -963,7 +944,7 @@ tobii_calibration_compute_and_apply returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -986,14 +967,14 @@ tobii_calibration_compute_and_apply_per_eye
 
 ### Function
 
-Computes a calibration based on data collected so far, using tobii_calibration_collect_data_per_eye_2d, and applies 
+Computes a calibration based on data collected so far, using tobii_calibration_collect_data_per_eye_2d, and applies
 the resulting calibration to the device.
 
 
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_compute_and_apply_per_eye( tobii_device_t* device, 
+    tobii_error_t tobii_calibration_compute_and_apply_per_eye( tobii_device_t* device,
         tobii_enabled_eye_t* calibrated_eyes );
 
 
@@ -1003,13 +984,13 @@ TBD - Documentation needs to be written for this function
 
 *device* must be a pointer to a valid tobii_device_t instance as created by calling tobii_device_create.
 
-*calibrated_eyes* receives information about which eyes were successfully calibrated: **TOBII_ENABLED_EYE_LEFT**, 
+*calibrated_eyes* receives information about which eyes were successfully calibrated: **TOBII_ENABLED_EYE_LEFT**,
 **TOBII_ENABLED_EYE_RIGHT** or **TOBII_ENABLED_EYE_BOTH**
 
 
 ### Return value
 
-If the operation is successful, tobii_calibration_compute_and_apply_per_eye returns **TOBII_ERROR_NO_ERROR**. If the 
+If the operation is successful, tobii_calibration_compute_and_apply_per_eye returns **TOBII_ERROR_NO_ERROR**. If the
 call fails, tobii_calibration_compute_and_apply_per_eye returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1018,7 +999,7 @@ call fails, tobii_calibration_compute_and_apply_per_eye returns one of the follo
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_compute_and_apply_per_eye from within a callback function is not supported.
 
@@ -1037,7 +1018,7 @@ call fails, tobii_calibration_compute_and_apply_per_eye returns one of the follo
 -   **TOBII_ERROR_OPERATION_FAILED**
 
     Not enough data collected to compute calibration.
-    
+
 -   **TOBII_ERROR_INTERNAL**
 
     Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
@@ -1046,7 +1027,7 @@ call fails, tobii_calibration_compute_and_apply_per_eye returns one of the follo
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_retrieve(),
@@ -1074,7 +1055,7 @@ Retrieves the currently applied calibration from the device.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_retrieve( tobii_device_t* device, 
+    tobii_error_t tobii_calibration_retrieve( tobii_device_t* device,
         tobii_data_receiver_t receiver, void* user_data );
 
 
@@ -1105,7 +1086,7 @@ This function will be called with the retrieved calibration data. It is called w
 
 ### Return value
 
-If the operation is successful, tobii_calibration_retrieve returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_retrieve returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_retrieve returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1114,7 +1095,7 @@ tobii_calibration_retrieve returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_retrieve from within a callback function is not supported.
 
@@ -1132,10 +1113,10 @@ tobii_calibration_retrieve returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
-tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), 
+tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(),
 tobii_calibration_parse(), tobii_calibration_apply()
 
 
@@ -1155,7 +1136,8 @@ tobii_calibration_parse(), tobii_calibration_apply()
 */
 
 /**
-@fn TOBII_API tobii_error_t TOBII_CALL tobii_calibration_parse( tobii_api_t* api, void const* data, size_t data_size, tobii_calibration_point_data_receiver_t receiver, void* user_data );
+@fn TOBII_API tobii_error_t TOBII_CALL tobii_calibration_parse( tobii_api_t* api, void const* data, size_t data_size, tobii_calibration_point_data_receiver_t receiver,
+void* user_data );
 @ingroup tobii_config
 
 tobii_calibration_parse
@@ -1169,8 +1151,8 @@ Extracts data about calibration points from the specified calibration.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_parse( tobii_api_t* api, void const* data, 
-        size_t data_size, tobii_calibration_point_data_receiver_t receiver, 
+    tobii_error_t tobii_calibration_parse( tobii_api_t* api, void const* data,
+        size_t data_size, tobii_calibration_point_data_receiver_t receiver,
         void* user_data );
 
 
@@ -1191,7 +1173,7 @@ TBD - Documentation needs to be written for this function
 This function will be called for each parsed point from the calibration. It is called with the following parameters:
 
 -   *point_data*
-    A pointer to a struct containing all the data related to a calibration point. 
+    A pointer to a struct containing all the data related to a calibration point.
     TBD - document the meaning of each field
 
 -   *user_data*
@@ -1202,7 +1184,7 @@ This function will be called for each parsed point from the calibration. It is c
 
 ### Return value
 
-If the operation is successful, tobii_calibration_parse returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_parse returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_parse returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1211,17 +1193,17 @@ tobii_calibration_parse returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_parse from within a callback function is not supported.
 
 -   **TOBII_OPERATION_FAILED**
-    
+
     The data being parsed was not a valid calibration.
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -1258,7 +1240,7 @@ Applies the specified calibration to the device, making it the current calibrati
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calibration_apply( tobii_device_t* device, 
+    tobii_error_t tobii_calibration_apply( tobii_device_t* device,
         void const* data, size_t size );
 
 
@@ -1275,7 +1257,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_calibration_apply returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calibration_apply returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calibration_apply returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1284,7 +1266,7 @@ tobii_calibration_apply returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_calibration_apply from within a callback function is not supported.
 
@@ -1303,7 +1285,7 @@ tobii_calibration_apply returns one of the following:
 -   **TOBII_ERROR_OPERATION_FAILED**
 
     The provided calibration could not be applied to the device.
-    
+
 -   **TOBII_ERROR_INTERNAL**
 
     Some unexpected internal error occurred. This error should normally not be returned, so if it is, please contact
@@ -1312,7 +1294,7 @@ tobii_calibration_apply returns one of the following:
 
 ### See also
 
-tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(), 
+tobii_calibration_start(), tobii_calibration_stop(), tobii_calibration_collect_data_2d(),
 tobii_calibration_collect_data_3d(), tobii_calibration_collect_data_per_eye_2d(), tobii_calibration_discard_data_2d(),
 tobii_calibration_discard_data_3d(), tobii_calibration_discard_data_per_eye_2d(), tobii_calibration_clear(),
 tobii_calibration_compute_and_apply(), tobii_calibration_compute_and_apply_per_eye(), tobii_calibration_retrieve(),
@@ -1349,7 +1331,7 @@ Retrieves the geometry mounting of the device.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_get_geometry_mounting( tobii_device_t* device, 
+    tobii_error_t tobii_get_geometry_mounting( tobii_device_t* device,
         tobii_geometry_mounting_t* geometry_mounting );
 
 
@@ -1364,7 +1346,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_get_geometry_mounting returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_get_geometry_mounting returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_get_geometry_mounting returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1373,7 +1355,7 @@ tobii_get_geometry_mounting returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_get_geometry_mounting from within a callback function is not supported.
 
@@ -1424,7 +1406,7 @@ Retrieves the current display area from the device.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_get_display_area( tobii_device_t* device, 
+    tobii_error_t tobii_get_display_area( tobii_device_t* device,
         tobii_display_area_t* display_area );
 
 
@@ -1439,7 +1421,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_get_display_area returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_get_display_area returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_get_display_area returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1448,7 +1430,7 @@ tobii_get_display_area returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_get_display_area from within a callback function is not supported.
 
@@ -1499,7 +1481,7 @@ Applies the specified display area setting to the device.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_set_display_area( tobii_device_t* device, 
+    tobii_error_t tobii_set_display_area( tobii_device_t* device,
         tobii_display_area_t const* display_area );
 
 
@@ -1515,7 +1497,7 @@ tobii_calculate_display_area_basic().
 
 ### Return value
 
-If the operation is successful, tobii_set_display_area returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_set_display_area returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_set_display_area returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1524,7 +1506,7 @@ tobii_set_display_area returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_set_display_area from within a callback function is not supported.
 
@@ -1561,7 +1543,8 @@ tobii_get_display_area(), tobii_calculate_display_area_basic()
 */
 
 /**
-@fn TOBII_API tobii_error_t TOBII_CALL tobii_calculate_display_area_basic( tobii_api_t* api, float width_mm, float height_mm, float offset_x_mm, tobii_geometry_mounting_t const* geometry_mounting, tobii_display_area_t* display_area );
+@fn TOBII_API tobii_error_t TOBII_CALL tobii_calculate_display_area_basic( tobii_api_t* api, float width_mm, float height_mm, float offset_x_mm, tobii_geometry_mounting_t
+const* geometry_mounting, tobii_display_area_t* display_area );
 @ingroup tobii_config
 
 tobii_calculate_display_area_basic
@@ -1575,9 +1558,9 @@ Calculates a basic display area configuration based on screen size and geometry 
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_calculate_display_area_basic( tobii_api_t* api, 
-        float width_mm, float height_mm, float offset_x_mm, 
-        tobii_geometry_mounting_t const* geometry_mounting, 
+    tobii_error_t tobii_calculate_display_area_basic( tobii_api_t* api,
+        float width_mm, float height_mm, float offset_x_mm,
+        tobii_geometry_mounting_t const* geometry_mounting,
         tobii_display_area_t* display_area );
 
 
@@ -1600,7 +1583,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_calculate_display_area_basic returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_calculate_display_area_basic returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_calculate_display_area_basic returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1610,7 +1593,7 @@ tobii_calculate_display_area_basic returns one of the following:
 
 ### See also
 
-tobii_get_display_area(), tobii_get_geometry_mounting(), 
+tobii_get_display_area(), tobii_get_geometry_mounting(),
 
 
 ### Example
@@ -1643,7 +1626,7 @@ Retrieves the users nickname for the device, if it has been set.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_get_device_name( tobii_device_t* device, 
+    tobii_error_t tobii_get_device_name( tobii_device_t* device,
         tobii_device_name_t* device_name );
 
 
@@ -1658,7 +1641,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_get_device_name returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_get_device_name returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_get_device_name returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1667,7 +1650,7 @@ tobii_get_device_name returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_get_device_name from within a callback function is not supported.
 
@@ -1718,7 +1701,7 @@ Sets a user nickname for the device.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_set_device_name( tobii_device_t* device, 
+    tobii_error_t tobii_set_device_name( tobii_device_t* device,
         tobii_device_name_t const device_name );
 
 
@@ -1733,7 +1716,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_set_device_name returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_set_device_name returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_set_device_name returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1742,7 +1725,7 @@ tobii_set_device_name returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_set_device_name from within a callback function is not supported.
 
@@ -1793,7 +1776,7 @@ Lists all valid output frequencies for the device.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_enumerate_output_frequencies( tobii_device_t* device, 
+    tobii_error_t tobii_enumerate_output_frequencies( tobii_device_t* device,
         tobii_output_frequency_receiver_t receiver, void* user_data );
 
 
@@ -1820,7 +1803,7 @@ This function will be called for each available output frequency. It is called w
 
 ### Return value
 
-If the operation is successful, tobii_enumerate_output_frequencies returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_enumerate_output_frequencies returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_enumerate_output_frequencies returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1829,7 +1812,7 @@ tobii_enumerate_output_frequencies returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_get_geometry_mounting from within a callback function is not supported.
 
@@ -1880,7 +1863,7 @@ Configures the device to run at the specified output frequency.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_set_output_frequency( tobii_device_t* device, 
+    tobii_error_t tobii_set_output_frequency( tobii_device_t* device,
         float output_frequency );
 
 
@@ -1895,7 +1878,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_set_output_frequency returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_set_output_frequency returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_set_output_frequency returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1904,7 +1887,7 @@ tobii_set_output_frequency returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_set_output_frequency from within a callback function is not supported.
 
@@ -1959,7 +1942,7 @@ Queries the current output frequency of the device.
 ### Syntax
 
     #include <tobii/tobii_config.h>
-    tobii_error_t tobii_get_output_frequency( tobii_device_t* device, 
+    tobii_error_t tobii_get_output_frequency( tobii_device_t* device,
         float* output_frequency );
 
 
@@ -1973,7 +1956,7 @@ TBD - Documentation needs to be written for this function
 
 ### Return value
 
-If the operation is successful, tobii_get_output_frequency returns **TOBII_ERROR_NO_ERROR**. If the call fails, 
+If the operation is successful, tobii_get_output_frequency returns **TOBII_ERROR_NO_ERROR**. If the call fails,
 tobii_get_output_frequency returns one of the following:
 
 -   **TOBII_ERROR_INVALID_PARAMETER**
@@ -1982,7 +1965,7 @@ tobii_get_output_frequency returns one of the following:
 
 -   **TOBII_ERROR_CALLBACK_IN_PROGRESS**
 
-    The function failed because it was called from within a callback triggered from an API call such as 
+    The function failed because it was called from within a callback triggered from an API call such as
     tobii_device_process_callbacks(), tobii_calibration_retrieve() or tobii_enumerate_illumination_modes().
     Calling tobii_get_output_frequency from within a callback function is not supported.
 

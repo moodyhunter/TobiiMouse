@@ -1,27 +1,16 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "tobii_interactive.h"
-#include "mouse_integration.h"
+#include "MainWindow.hpp"
 
-#include <QMessageBox>
-#include <QThread>
-#include <list>
-#include <iostream>
+#include "MouseIntegration.hpp"
+#include "TobiiAPI.hpp"
+#include "TobiiDevice.hpp"
+#include "ui_MainWindow.h"
 
-
-//using namespace std;
-
-MainWindow *MainWindow::instance = nullptr;
-
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
-
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    TobiiInteractive::Initialise();
+    tobiiInteraction = new TobiiMouse::TobiiAPI(this);
+    MouseIntegration::init();
     reloadTobiiDeviceList();
-    MainWindow::instance = this;
 }
 
 void MainWindow::OnGazePositionUIUpdate(float x, float y)
@@ -32,17 +21,15 @@ void MainWindow::OnGazePositionUIUpdate(float x, float y)
 
 void MainWindow::reloadTobiiDeviceList()
 {
-    auto devices = TobiiInteractive::ReloadDevices();
+    auto devices = tobiiInteraction->GetDevices();
     ui->tobiiDevicesList->clear();
     ui->tobiiDevicesList->addItems(devices);
 
-    if (ui->tobiiDevicesList->count() > 0) {
+    if (ui->tobiiDevicesList->count() > 0)
         ui->tobiiDevicesList->setCurrentItem(ui->tobiiDevicesList->item(0));
-    }
 }
 MainWindow::~MainWindow()
 {
-    TobiiInteractive::StopSubscribeGaze();
     delete ui;
 }
 
@@ -53,34 +40,49 @@ void MainWindow::on_reloadListButton_clicked()
 
 void MainWindow::on_useSelectedDeviceButton_clicked()
 {
-    if (!ui->tobiiDevicesList->selectedItems().isEmpty()) {
-        const auto x = ui->tobiiDevicesList->currentItem()->text();
-        QString currentSelected = x;
-        QMessageBox::warning(this, "shit", x);
+    if (!ui->tobiiDevicesList->selectedItems().isEmpty())
+    {
+        QString currentSelected = ui->tobiiDevicesList->currentItem()->text();
         ui->currentDeviceLabel->setText(currentSelected);
-        TobiiInteractive::StartSubscribeGaze(currentSelected);
+        if (currentDevice)
+            delete currentDevice;
+        currentDevice = tobiiInteraction->OpenDevice(currentSelected);
+        connect(currentDevice, &TobiiMouse::TobiiDevice::OnGazeDataReady, this,
+                [this](float x, float y)
+                {
+                    OnGazePositionUIUpdate(x, y);
+                    MouseIntegration::OnGaze(x, y);
+                });
+        currentDevice->SubscribeGazeData();
     }
 }
 
 void MainWindow::on_actionQuit_triggered()
 {
-    TobiiInteractive::StopSubscribeGaze();
+    if (currentDevice)
+    {
+        currentDevice->UnsubscribeGazeData();
+        disconnect(currentDevice);
+    }
     QApplication::quit();
 }
 
 void MainWindow::on_absoluteButton_clicked(bool checked)
 {
-    if (checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_ABSOLUTE);
+    if (checked)
+        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_ABSOLUTE);
 }
 
 void MainWindow::on_relativeButton_clicked(bool checked)
 {
-    if (checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_RELATIVE);
+    if (checked)
+        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_RELATIVE);
 }
 
 void MainWindow::on_radioButton_clicked(bool checked)
 {
-    if (checked) MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_SECTIONS);
+    if (checked)
+        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_SECTIONS);
 }
 
 void MainWindow::on_useNewMouseEvent_stateChanged(int arg1)
@@ -90,24 +92,18 @@ void MainWindow::on_useNewMouseEvent_stateChanged(int arg1)
 
 void MainWindow::on_doubleSpinBox_3_valueChanged(double arg1)
 {
-    //V
+    // V
     MouseIntegration::SetVThreashould(arg1);
 }
 
 void MainWindow::on_doubleSpinBox_2_valueChanged(double arg1)
 {
-    //H
+    // H
     MouseIntegration::SetHThreashould(arg1);
 }
 
 void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
 {
-    //R
+    // R
     MouseIntegration::SetMouseScaleFactor(arg1);
 }
-
-void MainWindow::on_tobiiDevicesList_currentRowChanged(int currentRow)
-{
-
-}
-

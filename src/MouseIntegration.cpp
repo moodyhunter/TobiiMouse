@@ -1,4 +1,15 @@
-#include "mouse_integration.h"
+#include "MouseIntegration.hpp"
+
+#include "NoiseCancellation.hpp"
+
+#ifdef __linux__
+#include "X11/Xlib.h"
+
+#include <X11/X.h>
+#include <X11/extensions/XTest.h>
+#include <X11/extensions/Xrandr.h>
+#endif
+
 #include <iostream>
 #include <vector>
 
@@ -12,7 +23,7 @@ namespace MouseIntegration
     static int LastY;
 
     // For Move by screen sectors.
-    static int InitialSpeed = 0; // pixels
+    static int InitialSpeed = 0;    // pixels
     static double ScaleFactor = 16; // factor of square when gaze is near the margin.
     static double HorizontalThreshold = 0.15;
     static double VerticalThreshold = 0.15;
@@ -25,7 +36,7 @@ namespace MouseIntegration
 #elif _WIN32
     static std::vector<RECT> Monitors;
 #endif
-}
+} // namespace MouseIntegration
 
 #ifdef _WIN32
 int CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC hdc, LPRECT lPRect, LPARAM _param)
@@ -69,16 +80,13 @@ void MouseIntegration::MoveMouseByScreenSection(int x, int y)
     auto noDetectRect_Right = screenCenterX + horizontalNoDetectRange;
     auto noDetectRect_Bottom = screenCenterY + verticalNoDetectRange;
 
-    if ((noDetectRect_Left < x && x < noDetectRect_Right) && (noDetectRect_Top < y && y < noDetectRect_Bottom)) return;
+    if ((noDetectRect_Left < x && x < noDetectRect_Right) && (noDetectRect_Top < y && y < noDetectRect_Bottom))
+        return;
 
     bool isGazeOnLeft = x < screenCenterX;
     bool isGazeOnTop = y < screenCenterY;
-    auto gazeRatioHorizontal = isGazeOnLeft
-                               ? fabs(noDetectRect_Left - x) / screenCenterX
-                               : fabs(x - noDetectRect_Right) / (screenCenterX);
-    auto gazeRatioVerticle = isGazeOnTop
-                             ? fabs(noDetectRect_Top - y) / screenCenterY
-                             : fabs(y - noDetectRect_Bottom) / (screenCenterY);
+    auto gazeRatioHorizontal = isGazeOnLeft ? fabs(noDetectRect_Left - x) / screenCenterX : fabs(x - noDetectRect_Right) / (screenCenterX);
+    auto gazeRatioVerticle = isGazeOnTop ? fabs(noDetectRect_Top - y) / screenCenterY : fabs(y - noDetectRect_Bottom) / (screenCenterY);
     auto HSpeed = int(InitialSpeed + pow(gazeRatioHorizontal, 2) * ScaleFactor);
     auto VSpeed = int(InitialSpeed + pow(gazeRatioVerticle, 2) * ScaleFactor);
 #ifdef _WIN32
@@ -108,7 +116,6 @@ void MouseIntegration::init()
 #endif
 }
 
-
 void MouseIntegration::MoveMouseTo(int x, int y)
 {
 #ifdef __linux__
@@ -126,7 +133,8 @@ void MouseIntegration::MoveMouseOffset(int x, int y)
     XFlush(_display);
 #elif _WIN32
 
-    if (UseNewMouseMoveFunction) {
+    if (UseNewMouseMoveFunction)
+    {
         INPUT ip;
         ip.type = INPUT_MOUSE;
         ip.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
@@ -135,7 +143,9 @@ void MouseIntegration::MoveMouseOffset(int x, int y)
         ip.mi.time = 0;
         ip.mi.mouseData = 0;
         SendInput(1, &ip, sizeof(ip));
-    } else {
+    }
+    else
+    {
         mouse_event(MOUSEEVENTF_MOVE, x - LastX, y - LastY, 0, NULL);
     }
 
@@ -154,22 +164,17 @@ void MouseIntegration::OnGaze(float x, float y)
     auto realGazeX = width * x;
     auto realGazeY = height * y;
     auto filtered = NoiseCancellation::CancelNoise(realGazeX, realGazeY);
-    //auto count = ScreenCount(_display); //Get total screen count.
+    // auto count = ScreenCount(_display); //Get total screen count.
     auto posiX = static_cast<int>(std::get<0>(filtered));
     auto posiY = static_cast<int>(std::get<1>(filtered));
 
-    switch (WorkingMode) {
-        case TOBII_MOUSE_MODE_MOVE_ABSOLUTE:
-            MoveMouseTo(posiX, posiY);
-            break;
+    switch (WorkingMode)
+    {
+        case TOBII_MOUSE_MODE_MOVE_ABSOLUTE: MoveMouseTo(posiX, posiY); break;
 
-        case TOBII_MOUSE_MODE_MOVE_RELATIVE:
-            MoveMouseOffset(posiX, posiY);
-            break;
+        case TOBII_MOUSE_MODE_MOVE_RELATIVE: MoveMouseOffset(posiX, posiY); break;
 
-        case TOBII_MOUSE_MODE_MOVE_BY_SECTIONS:
-            MoveMouseByScreenSection(posiX, posiY);
-            break;
+        case TOBII_MOUSE_MODE_MOVE_BY_SECTIONS: MoveMouseByScreenSection(posiX, posiY); break;
     }
 
     LastX = posiX;
