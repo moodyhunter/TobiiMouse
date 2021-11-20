@@ -1,55 +1,85 @@
 #include "MouseIntegration.hpp"
 
-#include "NoiseCancellation.hpp"
+#include <QtGlobal>
 
-#ifdef __linux__
-#include "X11/Xlib.h"
-
-#include <X11/X.h>
+#ifdef Q_OS_LINUX
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/Xrandr.h>
 #endif
 
-#include <iostream>
-#include <vector>
+#ifdef Q_OS_WINDOWS
+#include <windows.h>
+#include <winuser.h>
+#endif
+
+#include "NoiseCancellation.hpp"
 
 namespace MouseIntegration
 {
-    static MOUSEWORKINGMODE_E WorkingMode;
-    static int ScreenHeight;
-    static int ScreenWidth;
-
-    static int LastX;
-    static int LastY;
+    TobiiMouseWorkingMode WorkingMode;
+    int ScreenHeight;
+    int ScreenWidth;
+    int LastXPos;
+    int LastYPos;
 
     // For Move by screen sectors.
-    static int InitialSpeed = 0;    // pixels
-    static double ScaleFactor = 16; // factor of square when gaze is near the margin.
-    static double HorizontalThreshold = 0.15;
-    static double VerticalThreshold = 0.15;
-    //
-    static bool UseNewMouseMoveFunction = false;
-    //
-#ifdef __linux__
-    static Display *_display;
-    static Window _root_window;
-#elif _WIN32
-    static std::vector<RECT> Monitors;
+    int InitialSpeed = 0;    // pixels
+    double ScaleFactor = 16; // factor of square when gaze is near the margin.
+    double HorizontalThreshold = 0.15;
+    double VerticalThreshold = 0.15;
+
+    bool UseNewMouseMoveFunction = false;
+
+#ifdef Q_OS_LINUX
+    Display *X11_Display;
+#elif Q_OS_WIN
+    std::vector<RECT> Monitors;
 #endif
 } // namespace MouseIntegration
 
-#ifdef _WIN32
-int CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR hmonitor, HDC hdc, LPRECT lPRect, LPARAM _param)
+#ifdef Q_OS_WIN
+int CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR, HDC, LPRECT lPRect, LPARAM)
 {
-    Q_UNUSED(hmonitor)
-    Q_UNUSED(hdc)
-    Q_UNUSED(_param)
     Monitors.insert(Monitors.end(), *lPRect);
     ScreenWidth = lPRect->right - lPRect->left;
     ScreenHeight = lPRect->bottom - lPRect->top;
     return FALSE; // We currently only support the first one...
 }
 #endif
+
+void MouseIntegration::init()
+{
+    NoiseCancellation::init();
+    // TODO: Multiple Display supports.
+#ifdef Q_OS_LINUX
+    X11_Display = XOpenDisplay(None);
+    XRRScreenResources *screens = XRRGetScreenResources(X11_Display, XDefaultRootWindow(X11_Display));
+    XRRCrtcInfo *info = XRRGetCrtcInfo(X11_Display, screens, screens->crtcs[0]);
+    ScreenWidth = static_cast<int>(info->width);
+    ScreenHeight = static_cast<int>(info->height);
+    XRRFreeCrtcInfo(info);
+    XRRFreeScreenResources(screens);
+#elif Q_OS_WIN
+    EnumDisplayMonitors(nullptr, nullptr, EnumMonitors_CALLBACK, NULL);
+#endif
+}
+
+void MouseIntegration::SetWorkingMode(TobiiMouseWorkingMode mode)
+{
+    WorkingMode = mode;
+}
+
+void MouseIntegration::OnGaze(float x, float y)
+{
+    const auto &[XPos, YPos] = NoiseCancellation::CancelNoise((float) ScreenWidth * x, (float) ScreenHeight * y);
+    switch (WorkingMode)
+    {
+        case MouseMode_MOVE_ABSOLUTE: MoveMouseTo(XPos, YPos); break;
+        case MouseMode_MOVE_RELATIVE: MoveMouseOffset(XPos, YPos); break;
+        case MouseMode_MOVE_BY_SECTIONS: MoveMouseByScreenSection(XPos, YPos); break;
+    }
+    std::tie(LastXPos, LastYPos) = std::tuple{ XPos, YPos };
+}
 
 void MouseIntegration::SetUseNewMouseMoveFunction(bool useNew)
 {
@@ -60,79 +90,33 @@ void MouseIntegration::SetVThreashould(double Vth)
 {
     VerticalThreshold = Vth;
 }
+
 void MouseIntegration::SetHThreashould(double Hth)
 {
     HorizontalThreshold = Hth;
 }
+
 void MouseIntegration::SetMouseScaleFactor(double R)
 {
     ScaleFactor = R;
 }
 
-void MouseIntegration::MoveMouseByScreenSection(int x, int y)
-{
-    auto screenCenterX = static_cast<int>(ScreenWidth / 2);
-    auto screenCenterY = static_cast<int>(ScreenHeight / 2);
-    auto horizontalNoDetectRange = ((ScreenWidth - screenCenterX) * HorizontalThreshold);
-    auto verticalNoDetectRange = ((ScreenHeight - screenCenterY) * VerticalThreshold);
-    auto noDetectRect_Left = screenCenterX - horizontalNoDetectRange;
-    auto noDetectRect_Top = screenCenterY - verticalNoDetectRange;
-    auto noDetectRect_Right = screenCenterX + horizontalNoDetectRange;
-    auto noDetectRect_Bottom = screenCenterY + verticalNoDetectRange;
-
-    if ((noDetectRect_Left < x && x < noDetectRect_Right) && (noDetectRect_Top < y && y < noDetectRect_Bottom))
-        return;
-
-    bool isGazeOnLeft = x < screenCenterX;
-    bool isGazeOnTop = y < screenCenterY;
-    auto gazeRatioHorizontal = isGazeOnLeft ? fabs(noDetectRect_Left - x) / screenCenterX : fabs(x - noDetectRect_Right) / (screenCenterX);
-    auto gazeRatioVerticle = isGazeOnTop ? fabs(noDetectRect_Top - y) / screenCenterY : fabs(y - noDetectRect_Bottom) / (screenCenterY);
-    auto HSpeed = int(InitialSpeed + pow(gazeRatioHorizontal, 2) * ScaleFactor);
-    auto VSpeed = int(InitialSpeed + pow(gazeRatioVerticle, 2) * ScaleFactor);
-#ifdef _WIN32
-    auto HSpeedl = static_cast<unsigned long>(HSpeed);
-    auto VSpeedl = static_cast<unsigned long>(VSpeed);
-    mouse_event(MOUSEEVENTF_MOVE, isGazeOnLeft ? -HSpeedl : HSpeedl, isGazeOnTop ? -VSpeedl : VSpeedl, 0, NULL);
-#else
-    XTestFakeRelativeMotionEvent(_display, isGazeOnLeft ? -HSpeed : HSpeed, isGazeOnTop ? -VSpeed : VSpeed, 0);
-    XFlush(_display);
-#endif
-}
-void MouseIntegration::init()
-{
-    NoiseCancellation::init();
-    // TODO: Multiple Display supports.
-#ifdef __linux__
-    _display = XOpenDisplay(None);
-    _root_window = XRootWindow(_display, 0);
-    XRRScreenResources *screens = XRRGetScreenResources(_display, DefaultRootWindow(_display));
-    XRRCrtcInfo *info = XRRGetCrtcInfo(_display, screens, screens->crtcs[0]);
-    ScreenWidth = static_cast<int>(info->width);
-    ScreenHeight = static_cast<int>(info->height);
-    XRRFreeCrtcInfo(info);
-    XRRFreeScreenResources(screens);
-#elif _WIN32
-    EnumDisplayMonitors(nullptr, nullptr, EnumMonitors_CALLBACK, NULL);
-#endif
-}
-
 void MouseIntegration::MoveMouseTo(int x, int y)
 {
-#ifdef __linux__
-    XTestFakeMotionEvent(_display, 0, x, y, 0);
-    XFlush(_display);
-#elif _WIN32
+#ifdef Q_OS_LINUX
+    XTestFakeMotionEvent(X11_Display, 0, x, y, 0);
+    XFlush(X11_Display);
+#elif Q_OS_WIN
     SetCursorPos(x, y);
 #endif
 }
 
 void MouseIntegration::MoveMouseOffset(int x, int y)
 {
-#ifdef __linux__
-    XTestFakeRelativeMotionEvent(_display, x - LastX, y - LastY, 0);
-    XFlush(_display);
-#elif _WIN32
-
+#ifdef Q_OS_LINUX
+    XTestFakeRelativeMotionEvent(X11_Display, x - LastXPos, y - LastYPos, 0);
+    XFlush(X11_Display);
+#elif Q_OS_WIN
     if (UseNewMouseMoveFunction)
     {
         INPUT ip;
@@ -148,35 +132,35 @@ void MouseIntegration::MoveMouseOffset(int x, int y)
     {
         mouse_event(MOUSEEVENTF_MOVE, x - LastX, y - LastY, 0, NULL);
     }
-
 #endif
 }
 
-void MouseIntegration::SetWorkingMode(MOUSEWORKINGMODE_E mode)
+void MouseIntegration::MoveMouseByScreenSection(int x, int y)
 {
-    WorkingMode = mode;
-}
+    const auto screenCenterX = static_cast<int>(ScreenWidth / 2);
+    const auto screenCenterY = static_cast<int>(ScreenHeight / 2);
+    const auto horizontalNoDetectRange = ((ScreenWidth - screenCenterX) * HorizontalThreshold);
+    const auto verticalNoDetectRange = ((ScreenHeight - screenCenterY) * VerticalThreshold);
+    const auto noDetectRect_Left = screenCenterX - horizontalNoDetectRange;
+    const auto noDetectRect_Top = screenCenterY - verticalNoDetectRange;
+    const auto noDetectRect_Right = screenCenterX + horizontalNoDetectRange;
+    const auto noDetectRect_Bottom = screenCenterY + verticalNoDetectRange;
 
-void MouseIntegration::OnGaze(float x, float y)
-{
-    float width = ScreenWidth;
-    float height = ScreenHeight;
-    auto realGazeX = width * x;
-    auto realGazeY = height * y;
-    auto filtered = NoiseCancellation::CancelNoise(realGazeX, realGazeY);
-    // auto count = ScreenCount(_display); //Get total screen count.
-    auto posiX = static_cast<int>(std::get<0>(filtered));
-    auto posiY = static_cast<int>(std::get<1>(filtered));
+    if ((noDetectRect_Left < x && x < noDetectRect_Right) && (noDetectRect_Top < y && y < noDetectRect_Bottom))
+        return;
 
-    switch (WorkingMode)
-    {
-        case TOBII_MOUSE_MODE_MOVE_ABSOLUTE: MoveMouseTo(posiX, posiY); break;
-
-        case TOBII_MOUSE_MODE_MOVE_RELATIVE: MoveMouseOffset(posiX, posiY); break;
-
-        case TOBII_MOUSE_MODE_MOVE_BY_SECTIONS: MoveMouseByScreenSection(posiX, posiY); break;
-    }
-
-    LastX = posiX;
-    LastY = posiY;
+    const bool isGazeOnLeft = x < screenCenterX;
+    const bool isGazeOnTop = y < screenCenterY;
+    const auto gazeRatioHorizontal = isGazeOnLeft ? fabs(noDetectRect_Left - x) / screenCenterX : fabs(x - noDetectRect_Right) / (screenCenterX);
+    const auto gazeRatioVerticle = isGazeOnTop ? fabs(noDetectRect_Top - y) / screenCenterY : fabs(y - noDetectRect_Bottom) / (screenCenterY);
+    const auto HSpeed = int(InitialSpeed + pow(gazeRatioHorizontal, 2) * ScaleFactor);
+    const auto VSpeed = int(InitialSpeed + pow(gazeRatioVerticle, 2) * ScaleFactor);
+#ifdef Q_OS_WIN
+    const auto HSpeedl = static_cast<unsigned long>(HSpeed);
+    const auto VSpeedl = static_cast<unsigned long>(VSpeed);
+    mouse_event(MOUSEEVENTF_MOVE, isGazeOnLeft ? -HSpeedl : HSpeedl, isGazeOnTop ? -VSpeedl : VSpeedl, 0, NULL);
+#else
+    XTestFakeRelativeMotionEvent(X11_Display, isGazeOnLeft ? -HSpeed : HSpeed, isGazeOnTop ? -VSpeed : VSpeed, 0);
+    XFlush(X11_Display);
+#endif
 }

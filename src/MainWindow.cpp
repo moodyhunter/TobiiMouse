@@ -50,6 +50,8 @@ void MainWindow::on_useSelectedDeviceButton_clicked()
         connect(currentDevice, &TobiiMouse::TobiiDevice::OnGazeDataReady, this,
                 [this](float x, float y)
                 {
+                    if (x <= 0 && y <= 0)
+                        return;
                     OnGazePositionUIUpdate(x, y);
                     MouseIntegration::OnGaze(x, y);
                 });
@@ -70,19 +72,19 @@ void MainWindow::on_actionQuit_triggered()
 void MainWindow::on_absoluteButton_clicked(bool checked)
 {
     if (checked)
-        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_ABSOLUTE);
+        MouseIntegration::SetWorkingMode(MouseMode_MOVE_ABSOLUTE);
 }
 
 void MainWindow::on_relativeButton_clicked(bool checked)
 {
     if (checked)
-        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_RELATIVE);
+        MouseIntegration::SetWorkingMode(MouseMode_MOVE_RELATIVE);
 }
 
 void MainWindow::on_radioButton_clicked(bool checked)
 {
     if (checked)
-        MouseIntegration::SetWorkingMode(TOBII_MOUSE_MODE_MOVE_BY_SECTIONS);
+        MouseIntegration::SetWorkingMode(MouseMode_MOVE_BY_SECTIONS);
 }
 
 void MainWindow::on_useNewMouseEvent_stateChanged(int arg1)

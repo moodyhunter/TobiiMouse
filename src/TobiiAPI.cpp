@@ -1,8 +1,6 @@
 #include "TobiiAPI.hpp"
 
-#include <chrono>
 #include <iostream>
-#include <thread>
 
 using namespace TobiiMouse;
 
@@ -14,6 +12,14 @@ TobiiAPI::TobiiAPI(QObject *parent) : QObject(parent)
 
 TobiiAPI::~TobiiAPI()
 {
+    for (const auto &c : children())
+    {
+        if (const auto dev = qobject_cast<TobiiDevice *>(c))
+        {
+            dev->UnsubscribeGazeData();
+            delete dev;
+        }
+    }
     tobii_api_destroy(tobii_api);
 }
 

@@ -3,30 +3,31 @@
  *
  * Copyright 2013-2014 Tobii Technology AB. All rights reserved.
  * Copyright 2019 Leroy.H.Y (lhy20010403@hotmail.com).
+ * Copyright 2021 Moody (@moodyhunter)
  */
 
 #include "NoiseCancellation.hpp"
 
 namespace NoiseCancellation
 {
-    static std::tuple<float, float> lastdata;
+    std::tuple<float, float> lastdata;
 
-    static constexpr const float FDeadZone = 8.0;    // pixels
-    static constexpr const float g_SlowZone = 40;    // pixels
-    static constexpr const float FSpeed = 0.5f;      // how fast to move when far away
-    static constexpr const float FSlowSpeed = 0.04f; // now fast to move when close
+    constexpr const float FDeadZone = 8.0;    // pixels
+    constexpr const float g_SlowZone = 40;    // pixels
+    constexpr const float FSpeed = 0.5f;      // how fast to move when far away
+    constexpr const float FSlowSpeed = 0.04f; // now fast to move when close
 
-    static constexpr const float FIntegrationDeadZone = 1.0; // pixels
-    static constexpr const float integratingSpeed = 0.2f;
+    constexpr const float FIntegrationDeadZone = 1.0; // pixels
+    constexpr const float integratingSpeed = 0.2f;
 
-    static float lastRawX = 0;
-    static float lastRawY = 0;
+    float lastRawX = 0;
+    float lastRawY = 0;
 
-    static float filteredX = 0;
-    static float filteredY = 0;
+    float filteredX = 0;
+    float filteredY = 0;
 
-    static float integratedErrorX = 0;
-    static float integratedErrorY = 0;
+    float integratedErrorX = 0;
+    float integratedErrorY = 0;
 
     // static float filteredErrorX = 0; // this will be the distance between the gaze data and the current mouse position
     // static float filteredErrorY = 0; // this will be the distance between the gaze data and the current mouse position

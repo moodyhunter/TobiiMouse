@@ -15,6 +15,7 @@ TobiiDevice::~TobiiDevice()
 {
     if (workerThread->isRunning())
         UnsubscribeGazeData();
+    tobii_device_destroy(deviceHandle);
 }
 
 int TobiiDevice::SubscribeGazeData()
@@ -28,7 +29,7 @@ int TobiiDevice::SubscribeGazeData()
 
 int TobiiDevice::UnsubscribeGazeData()
 {
-    workerThread->terminate();
+    workerThread->Stop();
     workerThread->wait();
     return 0;
 }

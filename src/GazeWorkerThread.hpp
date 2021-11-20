@@ -11,6 +11,7 @@ namespace TobiiMouse
         Q_OBJECT
       public:
         GazeDataWorkerThread(tobii_device_t *deviceHandle, QObject *parent = nullptr);
+        void Stop();
 
       protected:
         void run() override;
@@ -19,6 +20,7 @@ namespace TobiiMouse
         void OnGazePointReady(float x, float y);
 
       private:
+        bool stopFlag = false;
         tobii_device_t *thisDevice;
     };
 } // namespace TobiiMouse::Gaze

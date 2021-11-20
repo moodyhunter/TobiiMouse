@@ -11,11 +11,16 @@ GazeDataWorkerThread::GazeDataWorkerThread(tobii_device_t *deviceHandle, QObject
 {
 }
 
+void GazeDataWorkerThread::Stop()
+{
+    stopFlag = true;
+}
+
 void GazeDataWorkerThread::run()
 {
     bool subscribed = false;
 
-    while (true)
+    while (!stopFlag)
     {
         // Do a timed blocking wait for new gaze data, will time out after some hundred milliseconds
         // I don't know why they have two different functions for Windows and Linux.....
