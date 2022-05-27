@@ -1,5 +1,7 @@
 #include "MouseIntegration.hpp"
 
+#include "NoiseCancellation.hpp"
+
 #include <QtGlobal>
 
 #ifdef Q_OS_LINUX
@@ -12,31 +14,6 @@
 #include <winuser.h>
 #endif
 
-#include "NoiseCancellation.hpp"
-
-namespace MouseIntegration
-{
-    TobiiMouseWorkingMode WorkingMode;
-    int ScreenHeight;
-    int ScreenWidth;
-    int LastXPos;
-    int LastYPos;
-
-    // For Move by screen sectors.
-    int InitialSpeed = 0;    // pixels
-    double ScaleFactor = 16; // factor of square when gaze is near the margin.
-    double HorizontalThreshold = 0.15;
-    double VerticalThreshold = 0.15;
-
-    bool UseNewMouseMoveFunction = false;
-
-#ifdef Q_OS_LINUX
-    Display *X11_Display;
-#elif Q_OS_WIN
-    std::vector<RECT> Monitors;
-#endif
-} // namespace MouseIntegration
-
 #ifdef Q_OS_WIN
 int CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR, HDC, LPRECT lPRect, LPARAM)
 {
@@ -47,7 +24,7 @@ int CALLBACK MouseIntegration::EnumMonitors_CALLBACK(HMONITOR, HDC, LPRECT lPRec
 }
 #endif
 
-void MouseIntegration::init()
+MouseIntegration::MouseIntegration()
 {
     NoiseCancellation::init();
     // TODO: Multiple Display supports.
@@ -103,6 +80,14 @@ void MouseIntegration::SetMouseScaleFactor(double R)
 
 void MouseIntegration::MoveMouseTo(int x, int y)
 {
+    x += DeltaX;
+    y += DeltaY;
+
+    emit OnAbsoluteMousePositionUpdated(x, y);
+
+    if (doNotUpdateMouse)
+        return;
+
 #ifdef Q_OS_LINUX
     XTestFakeMotionEvent(X11_Display, 0, x, y, 0);
     XFlush(X11_Display);
@@ -113,6 +98,9 @@ void MouseIntegration::MoveMouseTo(int x, int y)
 
 void MouseIntegration::MoveMouseOffset(int x, int y)
 {
+    if (doNotUpdateMouse)
+        return;
+
 #ifdef Q_OS_LINUX
     XTestFakeRelativeMotionEvent(X11_Display, x - LastXPos, y - LastYPos, 0);
     XFlush(X11_Display);
@@ -137,6 +125,9 @@ void MouseIntegration::MoveMouseOffset(int x, int y)
 
 void MouseIntegration::MoveMouseByScreenSection(int x, int y)
 {
+    if (doNotUpdateMouse)
+        return;
+
     const auto screenCenterX = static_cast<int>(ScreenWidth / 2);
     const auto screenCenterY = static_cast<int>(ScreenHeight / 2);
     const auto horizontalNoDetectRange = ((ScreenWidth - screenCenterX) * HorizontalThreshold);
@@ -163,4 +154,19 @@ void MouseIntegration::MoveMouseByScreenSection(int x, int y)
     XTestFakeRelativeMotionEvent(X11_Display, isGazeOnLeft ? -HSpeed : HSpeed, isGazeOnTop ? -VSpeed : VSpeed, 0);
     XFlush(X11_Display);
 #endif
+}
+
+void MouseIntegration::SetDeltaX(int x)
+{
+    DeltaX = x;
+}
+
+void MouseIntegration::SetDeltaY(int y)
+{
+    DeltaY = y;
+}
+
+void MouseIntegration::SetDoNotUpdateMouse(bool flag)
+{
+    doNotUpdateMouse = flag;
 }

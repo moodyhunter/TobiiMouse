@@ -28,7 +28,9 @@ qt_add_executable(TobiiMouse
     ${CMAKE_CURRENT_LIST_DIR}/src/NoiseCancellation.hpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TobiiAPI.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TobiiAPI.hpp
-    )
+    ${CMAKE_CURRENT_LIST_DIR}/src/GazeTracker.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/GazeTracker.cpp
+)
 
 target_link_libraries(TobiiMouse
     PRIVATE

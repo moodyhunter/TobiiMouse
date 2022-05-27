@@ -6,17 +6,11 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>700</width>
-    <height>380</height>
+    <width>757</width>
+    <height>417</height>
    </rect>
   </property>
   <property name="minimumSize">
-   <size>
-    <width>700</width>
-    <height>380</height>
-   </size>
-  </property>
-  <property name="maximumSize">
    <size>
     <width>700</width>
     <height>380</height>
@@ -135,7 +129,6 @@
            <font>
             <family>Microsoft YaHei UI</family>
             <pointsize>9</pointsize>
-            <weight>50</weight>
             <bold>false</bold>
            </font>
           </property>
@@ -187,7 +180,7 @@
          <string>Settings</string>
         </property>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
+         <item row="1" column="0">
           <widget class="QGroupBox" name="groupBox">
            <property name="title">
             <string>Mouse Mode</string>
@@ -226,7 +219,29 @@
            </layout>
           </widget>
          </item>
-         <item row="0" column="1" rowspan="2">
+         <item row="2" column="0">
+          <widget class="QGroupBox" name="groupBox_4">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="title">
+            <string>Misc</string>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="QCheckBox" name="checkBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Hide to tray</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="1" column="1" rowspan="2">
           <widget class="QGroupBox" name="groupBox_3">
            <property name="enabled">
             <bool>true</bool>
@@ -304,36 +319,55 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="0" colspan="2">
+            <item row="5" column="0" colspan="2">
              <widget class="QCheckBox" name="useNewMouseEvent">
               <property name="text">
                <string>Use new mouse event (Windows Only)</string>
               </property>
              </widget>
             </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QGroupBox" name="groupBox_4">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="title">
-            <string>Misc</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-             <widget class="QCheckBox" name="checkBox">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_7">
               <property name="text">
-               <string>Hide to tray</string>
+               <string>Delta X</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_8">
+              <property name="text">
+               <string>Delta Y</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QSpinBox" name="deltaXSB">
+              <property name="minimum">
+               <number>-999999</number>
+              </property>
+              <property name="maximum">
+               <number>999999</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QSpinBox" name="deltaYSB">
+              <property name="minimum">
+               <number>-999999</number>
+              </property>
+              <property name="maximum">
+               <number>999999</number>
               </property>
              </widget>
             </item>
            </layout>
+          </widget>
+         </item>
+         <item row="0" column="0" colspan="2">
+          <widget class="QCheckBox" name="showGazeCB">
+           <property name="text">
+            <string>Show Gaze Tracker</string>
+           </property>
           </widget>
          </item>
         </layout>
@@ -361,8 +395,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>700</width>
-     <height>22</height>
+     <width>757</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
